@@ -2,10 +2,11 @@ import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { LoggerMiddleware } from './middlewares/logger.middleware';
-import { UsersModule } from './users/users.module';
+import { BoardModule } from './board/board.module';
+import { PostModule } from './post/post.module';
 
 @Module({
-  imports: [UsersModule],
+  imports: [BoardModule, PostModule],
   controllers: [AppController],
   providers: [AppService],
 })
