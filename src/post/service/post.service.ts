@@ -1,21 +1,13 @@
-<<<<<<< HEAD
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { Post } from '@prisma/client';
 import { PrismaService } from 'src/prisma.service';
 import { CreatePostDto } from '../dto/create-post';
 import { UpdatePostDto } from 'src/board/dto/update-post';
-=======
-import { Injectable } from '@nestjs/common';
-import { Post } from '@prisma/client';
-import { PrismaService } from 'src/prisma.service';
-//import { CreatePostDto } from '../dto/create-post';
->>>>>>> aba6610 (post test success)
 
 @Injectable()
 export class PostService {
   constructor(private readonly prismaService: PrismaService) {}
 
-<<<<<<< HEAD
   async deletePost(postId: number): Promise<void> {
     const deletedPost = await this.prismaService.post.delete({
       where: { post_id: postId },
@@ -24,16 +16,11 @@ export class PostService {
     if (!deletedPost) {
       throw new NotFoundException('게시글을 찾을 수 없습니다.');
     }
-=======
-  async addFreePost(data: any): Promise<Post> {
-    return this.prismaService.post.create({ data });
->>>>>>> aba6610 (post test success)
   }
 
   async findAll(): Promise<Post[]> {
     return this.prismaService.post.findMany();
   }
-<<<<<<< HEAD
 
   async getAllFreePosts(): Promise<Post[]> {
     return this.prismaService.post.findMany({
@@ -314,6 +301,4 @@ export class PostService {
 
     return { data: inquiry, message: '비밀번호 확인 성공' };
   }
-=======
->>>>>>> aba6610 (post test success)
 }
