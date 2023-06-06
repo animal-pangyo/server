@@ -11,13 +11,16 @@ datasource db {
 }
 
 model users {
-  idx         Int       @id @default(autoincrement())
-  user_id       String    @unique  
-  user_name  String   
-  email    String   @unique
-  pwd String
-  created_at DateTime  @default(now())
-  updated_at DateTime
-  roles String
+  idx               Int       @id @default(autoincrement())
+  user_id           String    @unique  
+  user_name         String   
+  email             String   @unique
+  pwd               String
+  created_at        DateTime  @default(now())
+  updated_at        DateTime
+  roles             String
+  phone             String
+  address           String
+  birth             String
 }
 

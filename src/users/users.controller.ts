@@ -5,9 +5,7 @@ import {
   Get,
   Patch,
   Param,
-  Delete,
-  Res,
-  Req,
+  Logger,
 } from '@nestjs/common';
 import { JoinRequestDto } from './dto/join.request.dto';
 import { LoginDto } from './dto/login.dto';
@@ -25,9 +23,12 @@ export class UsersController {
     return this.usersService.createUser(
       data.user_id,
       data.email,
-      data.nickname,
+      data.user_name,
       data.pwd,
       data.pwdConfirm,
+      data.birth,
+      data.phone,
+      data.address,
     );
   }
 
@@ -61,9 +62,16 @@ export class UsersController {
     return this.usersService.updateUser(user_id, updateUserDto);
   }
 
-  // 유저 정보 찾기
+  // 아이디 찾기
   @Post(`find-account`)
-  async findAccount(@Body() findAccountDto: FindAccountDto) {
-    this.usersService.findUser(findAccountDto);
+  async findId(@Body() findAccountDto: FindAccountDto) {
+    Logger.log(`++++++++++`);
+    return this.usersService.findUserId(findAccountDto);
+  }
+
+  // 비번 리셋
+  @Post(`reset-password`)
+  async findPwd(@Body() findAccountDto: FindAccountDto) {
+    return this.usersService.findUserPwd(findAccountDto);
   }
 }

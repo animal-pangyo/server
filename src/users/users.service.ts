@@ -23,7 +23,7 @@ export class UsersService {
   async createUser(
     user_id: string,
     email: string,
-    nickname: string,
+    user_name: string,
     pwd: string,
     pwdConfirm: string,
     birth: string,
@@ -56,7 +56,7 @@ export class UsersService {
       data: {
         user_id,
         email,
-        user_name: nickname,
+        user_name: user_name,
         pwd: hashedPwd,
         roles: 'user',
         updated_at: new Date(),
@@ -124,6 +124,9 @@ export class UsersService {
       user_name: user.user_name,
       email: user.email,
       roles: user.roles,
+      phone: user.phone,
+      address: user.address,
+      birth: user.birth,
     };
   }
 
@@ -147,15 +150,57 @@ export class UsersService {
     return { message: '성공적으로 수정되었습니다', updateUserDto };
   }
 
-  async findUser(findAccountDto: FindAccountDto): Promise<User | null> {
-    const { user_name, birth, phone, email } = findAccountDto;
+  async findUserId(findAccountDto: FindAccountDto): Promise<User> {
+    const { email } = findAccountDto;
 
-    const user = await this.prisma.user.findFirst({
-      where: {
-        AND: [{ user_name }, { birth }, { phone }, { email }],
-      },
-    });
+    if (email) {
+      const user = await this.prisma.user.findFirst({
+        where: {
+          email,
+        },
+      });
 
-    return userByNickname;
+      if (!user) {
+        throw new NotFoundException('본인 확인에 실패했습니다.');
+      }
+
+      return user.user_id;
+    }
+  }
+
+  async findUserPwd(findAccountDto: FindAccountDto): Promise<User> {
+    const { email, user_id, pwd, pwdConfirm } = findAccountDto;
+
+    if (user_id) {
+      const user = await this.prisma.user.findFirst({
+        where: {
+          email,
+          user_id,
+        },
+      });
+
+      if (!user) {
+        throw new NotFoundException('본인 확인에 실패했습니다.');
+      }
+
+      if (pwd !== pwdConfirm) {
+        throw new HttpException(
+          '패스워드와 패스워드 확인란이 일치하지 않습니다.',
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+
+      const hashedPwd = await this.hashService.hashPwd(pwd);
+      await this.prisma.user.update({
+        where: {
+          user_id: user.user_id,
+        },
+        data: {
+          pwd: hashedPwd,
+        },
+      });
+
+      return { message: '비밀번호가 재설정되었습니다.' };
+    }
   }
 }
