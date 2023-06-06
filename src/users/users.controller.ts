@@ -6,12 +6,14 @@ import {
   Patch,
   Param,
   Logger,
+  Delete,
 } from '@nestjs/common';
 import { JoinRequestDto } from './dto/join.request.dto';
 import { LoginDto } from './dto/login.dto';
 import { UpdateUserDto } from './dto/update.user.dto';
 import { FindAccountDto } from './dto/find.account.dto';
 import { UsersService } from './users.service';
+import { Roles } from './admin/roles.decorator';
 
 @Controller('users')
 export class UsersController {
@@ -73,5 +75,11 @@ export class UsersController {
   @Post(`reset-password`)
   async findPwd(@Body() findAccountDto: FindAccountDto) {
     return this.usersService.findUserPwd(findAccountDto);
+  }
+
+  // 유저 정보 조회 2
+  @Get(':user_id/refresh')
+  async getUsersInfo(@Param('user_id') user_id: string) {
+    return this.usersService.getUser(user_id);
   }
 }
