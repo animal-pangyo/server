@@ -1,11 +1,11 @@
 import { IsNotEmpty, IsOptional } from 'class-validator';
 
-export class CreatePostDto {
-  user_id: string;
-  board_type: string;
-  title: string;
-  content: string;
+export class UpdatePostDto {
   @IsOptional()
   @IsNotEmpty()
-  post_pw?: string;
+  title: string;
+
+  @IsOptional()
+  @IsNotEmpty()
+  content: string;
 }

@@ -4,9 +4,10 @@ import { AppService } from './app.service';
 import { LoggerMiddleware } from './middlewares/logger.middleware';
 import { BoardModule } from './board/board.module';
 import { PostModule } from './post/post.module';
+import { CommentModule } from './comment/comment.module';
 
 @Module({
-  imports: [BoardModule, PostModule],
+  imports: [BoardModule, PostModule, CommentModule],
   controllers: [AppController],
   providers: [AppService],
 })
