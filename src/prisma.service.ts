@@ -17,6 +17,7 @@ export class PrismaService {
     return this.prisma.board;
   }
 
+
   constructor() {
     this.prisma = new PrismaClient();
   }
