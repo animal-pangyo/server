@@ -1,7 +1,5 @@
 import { IsNotEmpty, IsOptional } from 'class-validator';
 
-import { IsNotEmpty, IsOptional } from "class-validator";
-
 export class CreatePostDto {
   user_id: string;
   board_type: string;
