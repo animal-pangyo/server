@@ -13,6 +13,7 @@ import { User } from './dto/user';
 import { LoginDto } from './dto/login.dto';
 import { UpdateUserDto } from './dto/update.user.dto';
 import { FindAccountDto } from './dto/find.account.dto';
+import { Roles } from './admin/roles.decorator';
 @Injectable()
 export class UsersService {
   constructor(
@@ -90,7 +91,17 @@ export class UsersService {
     }
 
     const accessToken = this.generateAccessToken(user);
-    return { message: '성공적으로 로그인하였습니다', accessToken };
+    return {
+      message: '성공적으로 로그인하였습니다',
+      accessToken,
+      user_id: user.user_id,
+      user_name: user.user_name,
+      email: user.email,
+      roles: user.roles,
+      phone: user.phone,
+      address: user.address,
+      birth: user.birth,
+    };
   }
 
   private generateAccessToken(user: User): string {
@@ -202,5 +213,45 @@ export class UsersService {
 
       return { message: '비밀번호가 재설정되었습니다.' };
     }
+  }
+
+  // admin
+  async getUserList() {
+    const users = await this.prisma.user.findMany({
+      select: {
+        user_id: true,
+        user_name: true,
+        email: true,
+        roles: true,
+        phone: true,
+        address: true,
+        birth: true,
+      },
+    });
+    return users;
+  }
+
+  // admin
+  async deleteUser(user_id: string) {
+    const user = await this.prisma.user.findUnique({ where: { user_id } });
+
+    if (!user) {
+      throw new NotFoundException('해당 사용자를 찾을 수 없습니다.');
+    }
+
+    await this.prisma.user.delete({ where: { user_id } });
+  }
+
+  async logout(sessionId: string): Promise<void> {
+    this.sessions.delete(sessionId);
+    await this.prisma.session.delete({ where: { id: sessionId } });
+  }
+
+  // 사용자 아이디로 roles 찾기 (roles.guard랑 연결)
+  async findById(userId: string): Promise<User | null> {
+    return this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { id: true, roles: true },
+    });
   }
 }
