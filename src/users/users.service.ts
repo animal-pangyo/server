@@ -215,6 +215,7 @@ export class UsersService {
     }
   }
 
+  // admin
   async getUserList() {
     const users = await this.prisma.user.findMany({
       select: {
@@ -230,6 +231,7 @@ export class UsersService {
     return users;
   }
 
+  // admin
   async deleteUser(user_id: string) {
     const user = await this.prisma.user.findUnique({ where: { user_id } });
 
@@ -238,5 +240,18 @@ export class UsersService {
     }
 
     await this.prisma.user.delete({ where: { user_id } });
+  }
+
+  async logout(sessionId: string): Promise<void> {
+    this.sessions.delete(sessionId);
+    await this.prisma.session.delete({ where: { id: sessionId } });
+  }
+
+  // 사용자 아이디로 roles 찾기 (roles.guard랑 연결)
+  async findById(userId: string): Promise<User | null> {
+    return this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { id: true, roles: true },
+    });
   }
 }

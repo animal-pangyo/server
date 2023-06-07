@@ -7,13 +7,15 @@ import {
   Param,
   Logger,
   Delete,
+  Req,
+  Res,
 } from '@nestjs/common';
 import { JoinRequestDto } from './dto/join.request.dto';
 import { LoginDto } from './dto/login.dto';
 import { UpdateUserDto } from './dto/update.user.dto';
 import { FindAccountDto } from './dto/find.account.dto';
 import { UsersService } from './users.service';
-import { Roles } from './admin/roles.decorator';
+import { Request, Response } from 'express';
 
 @Controller('users')
 export class UsersController {
@@ -81,5 +83,12 @@ export class UsersController {
   @Get(':user_id/refresh')
   async getUsersInfo(@Param('user_id') user_id: string) {
     return this.usersService.getUser(user_id);
+  }
+
+  @Get('logout')
+  async logout(@Req() req: Request, @Res() res: Response): Promise<void> {
+    await this.usersService.logout((req as any).sessionID);
+    res.clearCookie('connect.sid');
+    res.sendStatus(200);
   }
 }

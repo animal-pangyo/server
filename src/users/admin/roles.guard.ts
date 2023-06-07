@@ -1,14 +1,15 @@
 import { Injectable, CanActivate, ExecutionContext } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import { Observable } from 'rxjs';
+import { UsersService } from '../users.service';
 
 @Injectable()
 export class RolesGuard implements CanActivate {
-  constructor(private reflector: Reflector) {}
+  constructor(
+    private readonly reflector: Reflector,
+    private readonly usersService: UsersService,
+  ) {}
 
-  canActivate(
-    context: ExecutionContext,
-  ): boolean | Promise<boolean> | Observable<boolean> {
+  async canActivate(context: ExecutionContext): Promise<boolean> {
     const roles = this.reflector.get<string[]>('roles', context.getHandler());
 
     if (!roles) {
@@ -17,9 +18,16 @@ export class RolesGuard implements CanActivate {
     }
 
     const request = context.switchToHttp().getRequest();
-    const userRoles = request.user?.roles;
+    const userId = request.user?.id;
 
-    if (!userRoles || !this.matchRoles(roles, userRoles)) {
+    if (!userId) {
+      // 사용자 인증이 되지 않은 경우 접근을 거부합니다.
+      return false;
+    }
+
+    const user = await this.usersService.findById(userId);
+
+    if (!user || !this.matchRoles(roles, [user.roles])) {
       // 역할이 맞지 않거나, 사용자 인증이 되지 않은 경우 접근을 거부합니다.
       return false;
     }
