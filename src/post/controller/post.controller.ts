@@ -7,6 +7,7 @@ import {
   Param,
   NotFoundException,
   Patch,
+  Query,
 } from '@nestjs/common';
 import { PostService } from '../service/post.service';
 import { CreatePostDto } from '../dto/create-post';
@@ -26,8 +27,45 @@ export class PostController {
   }
 
   @Get('/free')
-  async getFreePosts(): Promise<PrismaPost[]> {
-    return this.postService.getFreePosts();
+  async getFreePosts(@Query('page') page): Promise<PrismaPost[]> {
+    if (page === 'all') {
+      return this.postService.getAllFreePosts();
+    } else {
+      return this.postService.getFreePosts(page);
+    }
+  }
+
+  @Get('/inquiry')
+  async getInquiryPosts(@Query('page') page): Promise<PrismaPost[]> {
+    if (page === 'all') {
+      return this.postService.getAllInquiryPosts();
+    } else {
+      return this.postService.getInquiryPosts(page);
+    }
+  }
+
+  @Get('/notice')
+  async getNoticePosts(@Query('page') page): Promise<PrismaPost[]> {
+    if (page === 'all') {
+      return this.postService.getAllNoticePosts();
+    } else {
+      return this.postService.getNoticePosts(page);
+    }
+  }
+
+  @Get('/faq')
+  async getFAQPosts(@Query('page') page): Promise<PrismaPost[]> {
+    if (page === 'all') {
+      return this.postService.getAllFAQPosts();
+    } else {
+      return this.postService.getFAQPosts(page);
+    }
+  }
+
+  @Get('/:postId')
+  async getPostItem(@Param('postId') postId: string): Promise<PrismaPost> {
+    const postIdInt = parseInt(postId, 10);
+    return this.postService.getPostItem(postIdInt);
   }
 
   @Get('/inquiry/:postId')
@@ -59,12 +97,12 @@ export class PostController {
   }
 
   @Delete('/:postId')
-  async deleteFreePost(
+  async deletePost(
     @Param('postId') postId: string,
   ): Promise<{ message: string }> {
     try {
       const postIdInt = parseInt(postId, 10);
-      await this.postService.deleteFreePost(postIdInt);
+      await this.postService.deletePost(postIdInt);
       return { message: '게시글이 성공적으로 삭제되었습니다.' };
     } catch (error) {
       if (error instanceof NotFoundException) {
@@ -74,59 +112,9 @@ export class PostController {
     }
   }
 
-  @Post('/free')
-  async create(@Body() createPostDto: CreatePostDto): Promise<PrismaPost> {
-    console.log(createPostDto, 'res');
-    const { user_id, board_type } = createPostDto;
-
-    // user_id 값을 사용하여 user 정보를 조회합니다.
-    const user = await this.prisma.user.findUnique({
-      where: {
-        user_id: user_id,
-      },
-      select: {
-        idx: true,
-      },
-    });
-
-    // board_type 값을 사용하여 board 정보를 조회합니다.
-    const board = await this.prisma.board.findFirst({
-      where: {
-        board_type: board_type,
-      },
-      select: {
-        board_id: true,
-      },
-    });
-
-    const newData = {
-      author_id: user.idx,
-      board_id: board.board_id,
-      title: createPostDto.title,
-      content: createPostDto.content,
-    };
-
-    return this.postService.addFreePost(newData);
-  }
-
-  @Get('/notice')
-  async getNoticePosts(): Promise<PrismaPost[]> {
-    return this.postService.getNoticePosts();
-  }
-
-  // @Get('/notice')
-  // async getNoticePost(): Promise<PrismaPost[]> {
-  //   return this.postService.getNoticePost();
-  // }
-
-  @Get('/faq')
-  async getFAQPosts(): Promise<PrismaPost[]> {
-    return this.postService.getFAQPosts();
-  }
-
   // @Get('/faq')
-  // async getFAQPost(): Promise<PrismaPost[]> {
-  //   return this.postService.getFAQPost();
+  // async getFAQPosts(): Promise<PrismaPost[]> {
+  //   return this.postService.getFAQPosts();
   // }
 
   @Post()

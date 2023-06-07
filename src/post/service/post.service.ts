@@ -8,11 +8,7 @@ import { UpdatePostDto } from 'src/board/dto/update-post';
 export class PostService {
   constructor(private readonly prismaService: PrismaService) {}
 
-  async addFreePost(data: any): Promise<Post> {
-    return this.prismaService.post.create({ data });
-  }
-
-  async deleteFreePost(postId: number): Promise<void> {
+  async deletePost(postId: number): Promise<void> {
     const deletedPost = await this.prismaService.post.delete({
       where: { post_id: postId },
     });
@@ -26,7 +22,7 @@ export class PostService {
     return this.prismaService.post.findMany();
   }
 
-  async getFreePosts(): Promise<Post[]> {
+  async getAllFreePosts(): Promise<Post[]> {
     return this.prismaService.post.findMany({
       where: {
         board: {
@@ -36,7 +32,58 @@ export class PostService {
     });
   }
 
-  async getNoticePosts(): Promise<Post[]> {
+  async getFreePosts(page: number): Promise<any> {
+    const pageSize = 10;
+    const skip = (page - 1) * pageSize || 0;
+    const take = pageSize;
+
+    const [posts, total] = await Promise.all([
+      this.prismaService.post.findMany({
+        where: {
+          board: {
+            board_type: 'free',
+          },
+        },
+        skip,
+        take,
+        orderBy: {
+          created_at: 'desc',
+        },
+      }),
+      this.prismaService.post.count({
+        where: {
+          board: {
+            board_type: 'free',
+          },
+        },
+      }),
+    ]);
+    const totalPages = Math.ceil(total / pageSize);
+
+    return {
+      page,
+      pageSize,
+      total,
+      totalPages,
+      posts,
+    };
+  }
+
+  async getPostItem(postId: number): Promise<Post> {
+    const post = await this.prismaService.post.findUnique({
+      where: {
+        post_id: postId,
+      },
+    });
+
+    if (!post) {
+      throw new NotFoundException('게시글을 찾을 수 없습니다.');
+    }
+
+    return post;
+  }
+
+  async getAllNoticePosts(): Promise<Post[]> {
     return this.prismaService.post.findMany({
       where: {
         board: {
@@ -46,7 +93,97 @@ export class PostService {
     });
   }
 
-  async getFAQPosts(): Promise<Post[]> {
+  async getNoticePosts(page: number): Promise<any> {
+    if (!page) {
+      throw new NotFoundException('잘못된 api 요청');
+    }
+    const pageSize = 10;
+    const skip = (page - 1) * pageSize || 0;
+    const take = pageSize;
+
+    const [posts, total] = await Promise.all([
+      this.prismaService.post.findMany({
+        where: {
+          board: {
+            board_type: 'notice',
+          },
+        },
+        skip,
+        take,
+        orderBy: {
+          created_at: 'desc',
+        },
+      }),
+      this.prismaService.post.count({
+        where: {
+          board: {
+            board_type: 'notice',
+          },
+        },
+      }),
+    ]);
+    const totalPages = Math.ceil(total / pageSize);
+
+    return {
+      page,
+      pageSize,
+      total,
+      totalPages,
+      posts,
+    };
+  }
+
+  async getAllInquiryPosts(): Promise<Post[]> {
+    return this.prismaService.post.findMany({
+      where: {
+        board: {
+          board_type: 'inquiries',
+        },
+      },
+    });
+  }
+
+  async getInquiryPosts(page: number): Promise<any> {
+    if (!page) {
+      throw new NotFoundException('잘못된 api 요청');
+    }
+    const pageSize = 10;
+    const skip = (page - 1) * pageSize || 0;
+    const take = pageSize;
+
+    const [posts, total] = await Promise.all([
+      this.prismaService.post.findMany({
+        where: {
+          board: {
+            board_type: 'inquiries',
+          },
+        },
+        skip,
+        take,
+        orderBy: {
+          created_at: 'desc',
+        },
+      }),
+      this.prismaService.post.count({
+        where: {
+          board: {
+            board_type: 'inquiries',
+          },
+        },
+      }),
+    ]);
+    const totalPages = Math.ceil(total / pageSize);
+
+    return {
+      page,
+      pageSize,
+      total,
+      totalPages,
+      posts,
+    };
+  }
+
+  async getAllFAQPosts(): Promise<Post[]> {
     return this.prismaService.post.findMany({
       where: {
         board: {
@@ -54,6 +191,46 @@ export class PostService {
         },
       },
     });
+  }
+
+  async getFAQPosts(page: number): Promise<any> {
+    if (!page) {
+      throw new NotFoundException('잘못된 api 요청');
+    }
+    const pageSize = 10;
+    const skip = (page - 1) * pageSize || 0;
+    const take = pageSize;
+
+    const [posts, total] = await Promise.all([
+      this.prismaService.post.findMany({
+        where: {
+          board: {
+            board_type: 'FAQ',
+          },
+        },
+        skip,
+        take,
+        orderBy: {
+          created_at: 'desc',
+        },
+      }),
+      this.prismaService.post.count({
+        where: {
+          board: {
+            board_type: 'FAQ',
+          },
+        },
+      }),
+    ]);
+    const totalPages = Math.ceil(total / pageSize);
+
+    return {
+      page,
+      pageSize,
+      total,
+      totalPages,
+      posts,
+    };
   }
 
   async updatePost(
@@ -110,6 +287,7 @@ export class PostService {
   async getInquiryByIdAndPassword(id: number, password: string): Promise<any> {
     const inquiry = await this.prismaService.post.findUnique({
       where: { post_id: id },
+      include: { comments: true },
     });
     console.log('inquiry', inquiry);
 
