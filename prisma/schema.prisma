@@ -10,7 +10,9 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model users {
+
+model User {
+
   idx               Int       @id @default(autoincrement())
   user_id           String    @unique  
   user_name         String   
@@ -22,5 +24,41 @@ model users {
   phone             String
   address           String
   birth             String
+
+  posts             Post[]
+  comments   Comment[]
 }
+
+model Post {
+  post_id    Int      @id @default(autoincrement())
+  board_id   Int
+  title      String
+  content    String
+  author_id  Int
+  created_at DateTime @default(now())
+	post_pw    String?
+  board      Board    @relation(fields: [board_id], references: [board_id])
+  author     User     @relation(fields: [author_id], references: [idx])
+  comments   Comment[]
+}
+
+model Board {
+  board_id   Int      @id @default(autoincrement())
+  board_name String
+  board_type String
+  created_at DateTime @default(now())
+  posts             Post[]
+}
+
+model Comment {
+  comment_id Int      @id @default(autoincrement())
+  post_id    Int
+  content    String
+  author_id  Int
+  created_at DateTime @default(now())
+  post       Post     @relation(fields: [post_id], references: [post_id])
+  author     User     @relation(fields: [author_id], references: [idx])
+}
+
+
 

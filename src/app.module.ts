@@ -2,12 +2,15 @@ import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { LoggerMiddleware } from './middlewares/logger.middleware';
+import { BoardModule } from './board/board.module';
+import { PostModule } from './post/post.module';
+import { CommentModule } from './comment/comment.module';
 import { UsersModule } from './users/users.module';
 import { GoogleStrategy } from './users/google/google.strategy';
 import { GoogleModule } from './users/google/google.module';
 
 @Module({
-  imports: [UsersModule, GoogleModule],
+  imports: [UsersModule, GoogleModule, BoardModule, PostModule, CommentModule],
   controllers: [AppController],
   providers: [AppService, GoogleStrategy],
 })

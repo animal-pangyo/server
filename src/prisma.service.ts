@@ -5,6 +5,19 @@ import { PrismaClient } from '@prisma/client';
 export class PrismaService {
   private prisma: PrismaClient;
 
+  get post() {
+    return this.prisma.post;
+  }
+
+  get comment() {
+    return this.prisma.comment;
+  }
+
+  get board() {
+    return this.prisma.board;
+  }
+
+
   constructor() {
     this.prisma = new PrismaClient();
   }
@@ -18,6 +31,6 @@ export class PrismaService {
   }
 
   get user() {
-    return this.prisma.users;
+    return this.prisma.user;
   }
 }
