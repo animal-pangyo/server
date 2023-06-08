@@ -8,9 +8,17 @@ import { CommentModule } from './comment/comment.module';
 import { UsersModule } from './users/users.module';
 import { GoogleStrategy } from './users/google/google.strategy';
 import { GoogleModule } from './users/google/google.module';
+import { AdminModule } from './users/admin/admin.module';
 
 @Module({
-  imports: [UsersModule, GoogleModule, BoardModule, PostModule, CommentModule],
+  imports: [
+    UsersModule,
+    GoogleModule,
+    BoardModule,
+    PostModule,
+    CommentModule,
+    AdminModule,
+  ],
   controllers: [AppController],
   providers: [AppService, GoogleStrategy],
 })

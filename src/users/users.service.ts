@@ -106,7 +106,7 @@ export class UsersService {
 
   private generateAccessToken(user: User): string {
     const crypto = require('crypto');
-    const secretKey = crypto.randomBytes(32).toString('hex');
+    const secretKey = process.env.SECRET_KEY;
 
     const payload = {
       user_id: user.user_id,
@@ -247,11 +247,33 @@ export class UsersService {
     await this.prisma.session.delete({ where: { id: sessionId } });
   }
 
-  // 사용자 아이디로 roles 찾기 (roles.guard랑 연결)
-  async findById(userId: string): Promise<User | null> {
+  async findById(userId) {
     return this.prisma.user.findUnique({
       where: { id: userId },
       select: { id: true, roles: true },
     });
+  }
+
+  // admin
+  async verifyAccessTokenAndGetUserId(accessToken) {
+    const publicKey = process.env.SECRET_KEY;
+
+    try {
+      const decodedToken = jwt.verify(accessToken, publicKey);
+      const userId = decodedToken.user_id;
+
+      const user = await this.prismaService.user.findUnique({
+        where: { user_id: 'test' },
+      });
+
+      console.log('&&&&&&&&&&&&&&&&&', user);
+      if (!user) {
+        throw new UnauthorizedException('유저가 존재하지 않습니다');
+      }
+
+      return userId;
+    } catch (error) {
+      throw new UnauthorizedException(`사용할 수 없는 토큰입니다`);
+    }
   }
 }

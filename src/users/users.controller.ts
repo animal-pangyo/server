@@ -9,6 +9,7 @@ import {
   Delete,
   Req,
   Res,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { JoinRequestDto } from './dto/join.request.dto';
 import { LoginDto } from './dto/login.dto';
@@ -79,10 +80,20 @@ export class UsersController {
     return this.usersService.findUserPwd(findAccountDto);
   }
 
-  // 유저 정보 조회 2
-  @Get(':user_id/refresh')
-  async getUsersInfo(@Param('user_id') user_id: string) {
-    return this.usersService.getUser(user_id);
+  // 내 정보 조회
+  @Get(`refresh`)
+  async getMyInfo(@Req() request) {
+    const accessToken = request.headers.authorization?.split(' ')[1];
+
+    if (!accessToken) {
+      throw new UnauthorizedException('토큰이 없습니다');
+    }
+
+    const userId = await this.usersService.verifyAccessTokenAndGetUserId(
+      accessToken,
+    );
+    const user = await this.usersService.getUser(userId);
+    return this.usersService.getUser(userId);
   }
 
   @Get('logout')
