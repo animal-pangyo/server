@@ -6,13 +6,14 @@ import { BoardModule } from './board/board.module';
 import { PostModule } from './post/post.module';
 import { CommentModule } from './comment/comment.module';
 import { UsersModule } from './users/users.module';
-import { GoogleStrategy } from './users/google/google.strategy';
+//import { GoogleStrategy } from './users/google/google.strategy';
 import { GoogleModule } from './users/google/google.module';
+import { StoreModule } from './store/store.module';
 
 @Module({
-  imports: [UsersModule, GoogleModule, BoardModule, PostModule, CommentModule],
+  imports: [UsersModule, GoogleModule, BoardModule, PostModule, CommentModule, StoreModule],
   controllers: [AppController],
-  providers: [AppService, GoogleStrategy],
+  providers: [AppService, ]//GoogleStrategy
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {

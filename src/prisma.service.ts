@@ -4,7 +4,15 @@ import { PrismaClient } from '@prisma/client';
 @Injectable()
 export class PrismaService {
   private prisma: PrismaClient;
+  
+  constructor() {
+    this.prisma = new PrismaClient();
+  }
 
+  get like() {
+    return this.prisma.like;
+  }
+  
   get post() {
     return this.prisma.post;
   }
@@ -17,9 +25,12 @@ export class PrismaService {
     return this.prisma.board;
   }
 
+  get review() {
+    return this.prisma.review;
+  }
 
-  constructor() {
-    this.prisma = new PrismaClient();
+  get store() {
+    return this.prisma.store;
   }
 
   get client() {
