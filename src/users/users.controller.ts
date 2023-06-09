@@ -7,6 +7,7 @@ import {
   Param,
   Logger,
   Delete,
+  UnauthorizedException,
   Req,
   Res,
 } from '@nestjs/common';
@@ -42,15 +43,6 @@ export class UsersController {
     return this.usersService.logIn(loginDto);
   }
 
-  // 로그아웃
-  // @Post(`logout`)
-  // async logOut(@Req() req, @Res() res) {
-  //   req.logOut();
-  //   req.session.destroy();
-  //   res.clearCookie(`connect.sid`, { httpOnly: true });
-  //   res.send(`로그아웃되었습니다`);
-  // }
-
   // 유저 정보 조회
   @Get(':user_id')
   async getUsers(@Param('user_id') user_id: string) {
@@ -79,16 +71,27 @@ export class UsersController {
     return this.usersService.findUserPwd(findAccountDto);
   }
 
-  // 유저 정보 조회 2
-  @Get(':user_id/refresh')
-  async getUsersInfo(@Param('user_id') user_id: string) {
-    return this.usersService.getUser(user_id);
+  // 내 정보 조회
+  @Get('refresh/mine')
+  async getMyInfo(@Req() request) {
+    const accessToken = request.headers.authorization;
+
+    if (!accessToken) {
+      throw new UnauthorizedException('토큰이 없습니다');
+    }
+
+    const userId = await this.usersService.verifyAccessTokenAndGetUserId(
+      accessToken,
+    );
+
+    return this.usersService.getUserInfoAndToken(userId);
   }
 
   @Get('logout')
-  async logout(@Req() req: Request, @Res() res: Response): Promise<void> {
-    await this.usersService.logout((req as any).sessionID);
-    res.clearCookie('connect.sid');
+  async logout(@Req() req, @Res() res) {
+    const sessionId = req.sessionID;
+    await this.usersService.logout(sessionId);
+    res.clearCookie('connect.sid'); 
     res.sendStatus(200);
   }
 }
