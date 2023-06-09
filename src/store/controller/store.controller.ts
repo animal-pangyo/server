@@ -5,6 +5,7 @@ import { CreateReviewDto } from '../dto/create-review.dto';
 import { CreateLikeDto } from '../dto/create-like.dto';
 import { CreateStoreDto } from '../dto/create-store.dto';
 import { UpdateStoreDto } from '../dto/update-store.dto';
+import axios from 'axios';
 
 @Controller('stores')
 export class StoreController {
@@ -18,6 +19,32 @@ export class StoreController {
     ): Promise<{ stores: Store[], totalCount: number }> {
         return this.storeService.getStoresByType(storeType, page, sort);
     }
+
+    @Get('/map')
+  async getCafes(@Query('latitude') latitude: number, @Query('longitude') longitude: number,  @Query('keyword') keyword: string,) {
+    console.log(latitude, "map")
+    const apiKey = 'ea05efaca902f69c57ff24d3eb780e80';
+   // const url = `https://dapi.kakao.com/v2/local/search/category.json?category_group_code=CE7&x=${longitude}&y=${latitude}`;
+   const url = `https://dapi.kakao.com/v2/local/search/keyword.json?y=${latitude}&x=${longitude}&query=${encodeURIComponent(keyword)}`;
+     console.log(url, "url")
+    try {
+      const response = await axios.get(url, {
+        headers: {
+          Authorization: `KakaoAK ${apiKey}`,
+        },
+      });
+        console.log("response123", response.data)
+      const data = response.data.documents.map((data) => ({
+        id: data.id,
+        name: data.place_name,
+        address: data.address_name,
+      }));
+
+       return data;
+    } catch (error) {
+      throw new Error('Failed to fetch nearby datas');
+    }
+  }
 
     @Post()
     async createCompany(@Body() createStoreDto: CreateStoreDto): Promise<any> {
