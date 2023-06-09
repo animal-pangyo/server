@@ -13,9 +13,10 @@ export class StoreController {
     @Get()
     async getStoresByType(
         @Query('type') storeType: string,
-        @Query('page') page: number = 1,
+        @Query('page') page: number,
+        @Query('sort') sort: string 
     ): Promise<{ stores: Store[], totalCount: number }> {
-        return this.storeService.getStoresByType(storeType, page);
+        return this.storeService.getStoresByType(storeType, page, sort);
     }
 
     @Post()

@@ -10,9 +10,40 @@ import { UpdateStoreDto } from '../dto/update-store.dto';
 export class StoreService {
     constructor(private readonly prismaService: PrismaService) {}    
 
-    async getStoresByType(storeType: string, page: number): Promise<{ stores: Store[], totalCount: number }> {
+    async getStoresByType(storeType: string, page: number, sort: string): Promise<{ stores: Store[], totalCount: number }> {
       const limit = 10;
       const skip = (page - 1) * limit;
+
+      let orderBy = {};
+
+      if (sort === 'newest') {
+        orderBy = {
+          reviews: {
+            count: 'desc',
+          },
+          //created_at: 'desc',
+        };
+      } else if (sort === 'popular') {
+        orderBy = {
+          likes: {
+            _count: 'desc',
+          },
+        };
+      } else if (sort === 'reviews') {
+        orderBy = {
+          reviews: {
+            _count: 'desc',
+          },
+        };
+      } else {
+        orderBy = {
+          reviews: {
+            _count: 'desc',
+          },
+          //created_at: 'desc',
+        };
+      }
+
       const [stores, totalCount] = await Promise.all([
         this.prismaService.store.findMany({
           where: {
@@ -24,6 +55,7 @@ export class StoreService {
           },
           skip,
           take: limit,
+          orderBy,
         }),
         this.prismaService.store.count({
           where: {
