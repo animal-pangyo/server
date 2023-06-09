@@ -5,6 +5,7 @@ import {
   HttpStatus,
   Injectable,
   NotFoundException,
+  UnauthorizedException,
   HttpException,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma.service';
@@ -141,6 +142,27 @@ export class UsersService {
     };
   }
 
+  async getUserInfoAndToken(user_id: string): Promise<User> {
+    const user = await this.prisma.user.findUnique({
+      where: { user_id },
+    });
+
+    if (!user) {
+      throw new NotFoundException('유저가 존재하지 않습니다');
+    }
+    const accessToken = this.generateAccessToken(user);
+    return {
+      accessToken,
+      user_id: user.user_id,
+      user_name: user.user_name,
+      email: user.email,
+      roles: user.roles,
+      phone: user.phone,
+      address: user.address,
+      birth: user.birth,
+    };
+  }
+
   async updateUser(
     user_id: string,
     updateUserDto: UpdateUserDto,
@@ -216,7 +238,10 @@ export class UsersService {
   }
 
   // admin
-  async getUserList() {
+  async getUserList(page, perPage) {
+    const skip = (page - 1) * perPage;
+    const take = perPage;
+
     const users = await this.prisma.user.findMany({
       select: {
         user_id: true,
@@ -227,22 +252,14 @@ export class UsersService {
         address: true,
         birth: true,
       },
+      skip,
+      take,
     });
+    
     return users;
   }
 
-  // admin
-  async deleteUser(user_id: string) {
-    const user = await this.prisma.user.findUnique({ where: { user_id } });
-
-    if (!user) {
-      throw new NotFoundException('해당 사용자를 찾을 수 없습니다.');
-    }
-
-    await this.prisma.user.delete({ where: { user_id } });
-  }
-
-  async logout(sessionId: string): Promise<void> {
+  async logout(sessionId){
     this.sessions.delete(sessionId);
     await this.prisma.session.delete({ where: { id: sessionId } });
   }
@@ -256,24 +273,43 @@ export class UsersService {
 
   // admin
   async verifyAccessTokenAndGetUserId(accessToken) {
-    const publicKey = process.env.SECRET_KEY;
-
+    const secretKey = process.env.SECRET_KEY;
+  
     try {
-      const decodedToken = jwt.verify(accessToken, publicKey);
+      const decodedToken = jwt.verify(accessToken, secretKey);
+      console.log(decodedToken);
       const userId = decodedToken.user_id;
-
-      const user = await this.prismaService.user.findUnique({
-        where: { user_id: 'test' },
+      console.log(userId);
+  
+      const user = await this.prisma.user.findUnique({
+        where: {
+          user_id: userId
+        }
       });
-
-      console.log('&&&&&&&&&&&&&&&&&', user);
+  
       if (!user) {
         throw new UnauthorizedException('유저가 존재하지 않습니다');
       }
-
+  
       return userId;
+        
     } catch (error) {
-      throw new UnauthorizedException(`사용할 수 없는 토큰입니다`);
+      if (error instanceof jwt.JsonWebTokenError) {
+        throw new UnauthorizedException('사용할 수 없는 토큰입니다');
+      }
+      throw error;
     }
+  }
+
+  // admin
+  async deleteUser(user_id) {
+    const user = await this.prisma.user.findUnique({ where: { user_id } });
+
+    if (!user) {
+      throw new NotFoundException('해당 사용자를 찾을 수 없습니다.');
+    }
+
+    await this.prisma.user.delete({ where: { user_id } });
+    return { message: `유저 아이디 ${user_id} 이(가) 삭제되었습니다.`}; 
   }
 }
