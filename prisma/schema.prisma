@@ -26,6 +26,7 @@ model User {
   birth             String
   posts             Post[]
   comments          Comment[]
+  atn               String   
   reviews           Review[] @relation("ReviewUser")
   likes             Like[]   @relation("LikeUser")
 }
