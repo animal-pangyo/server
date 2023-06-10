@@ -36,11 +36,11 @@ model Post {
   board_id   Int
   title      String
   content    String
-  author_id  Int
+  author_id  String
   created_at DateTime @default(now())
 	post_pw    String?
   board      Board    @relation(fields: [board_id], references: [board_id])
-  author     User     @relation(fields: [author_id], references: [idx])
+  author     User     @relation(fields: [author_id], references: [user_id], onDelete: Cascade)
   comments   Comment[]
 }
 
@@ -67,6 +67,7 @@ model Store {
   store_type    String
 	name       String
   address    String
+  detail_address String
   details    String
   business_hours String
   contact String
@@ -75,6 +76,7 @@ model Store {
   reviews Review[]
   likes Like[]
   created_at DateTime @default(now())
+  address_id String
 }
 
 model Review {
@@ -82,7 +84,7 @@ model Review {
   content     String
   store_id    Int
   user_id    String
-  user        User     @relation("ReviewUser", fields: [user_id], references: [user_id])
+  user        User     @relation("ReviewUser", fields: [user_id], references: [user_id], onDelete: Cascade)
   store     Store  @relation(fields: [store_id], references: [store_id])
   created_at  DateTime @default(now())
 }
@@ -91,7 +93,7 @@ model Like {
   Like_id     Int      @id @default(autoincrement())
   user_id     Int
   store_id  Int
-  user        User     @relation("LikeUser", fields: [user_id], references: [idx])
+  user        User     @relation("LikeUser", fields: [user_id], references: [idx] , onDelete: Cascade)
   store     Store  @relation(fields: [store_id], references: [store_id])
   created_at  DateTime @default(now())
 }

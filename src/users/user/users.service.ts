@@ -208,8 +208,9 @@ export class UsersService {
       if (!user) {
         throw new NotFoundException('본인 확인에 실패했습니다.');
       }
-
-      return user.user_id;
+      console.log('###########', user.user_id);
+      const id = user.user_id;
+      return { message: '아이디는 이것이에요', id };
     }
   }
 
@@ -234,7 +235,7 @@ export class UsersService {
           HttpStatus.BAD_REQUEST,
         );
       }
-
+      console.log(findAccountDto);
       const hashedPwd = await this.hashService.hashPwd(pwd);
       await this.prisma.user.update({
         where: {
@@ -244,7 +245,7 @@ export class UsersService {
           pwd: hashedPwd,
         },
       });
-
+      console.log(hashedPwd);
       return { message: '비밀번호가 재설정되었습니다.' };
     }
   }

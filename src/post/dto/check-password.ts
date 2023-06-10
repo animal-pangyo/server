@@ -1,3 +1,3 @@
 export class CheckPasswordDto {
-  password: string;
+  password?: string;
 }

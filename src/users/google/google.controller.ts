@@ -18,10 +18,9 @@ export class GoogleController {
   @Get('redirect')
   @UseGuards(AuthGuard('google'))
   async googleAuthRedirect(@Req() req) {
-    const { user: googleUser } = this.googleService.googleLogin(req);
+    const googleUser = req.user;
     const email = googleUser.email;
     const accessToken = googleUser.accessToken;
-
     const user = await this.prisma.user.findUnique({
       where: { email },
     });
@@ -41,6 +40,7 @@ export class GoogleController {
           address: '',
           user_name: googleUser.firstName,
           created_at: new Date(),
+          atn: accessToken,
         },
       });
     }

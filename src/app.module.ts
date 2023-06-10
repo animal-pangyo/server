@@ -12,9 +12,17 @@ import { AdminModule } from './users/admin/admin.module';
 import { UsersModule } from './users/user/users.module';
 
 @Module({
-  imports: [UsersModule, GoogleModule, BoardModule, PostModule, CommentModule, AdminModule, StoreModule],
+  imports: [
+    UsersModule,
+    GoogleModule,
+    BoardModule,
+    PostModule,
+    CommentModule,
+    AdminModule,
+    StoreModule,
+  ],
   controllers: [AppController],
-  providers: [AppService, ]//GoogleStrategy
+  providers: [AppService, GoogleStrategy], //GoogleStrategy
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
