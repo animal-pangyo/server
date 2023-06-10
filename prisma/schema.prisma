@@ -69,6 +69,8 @@ model Store {
   details    String
   business_hours String
   contact String
+  latitude String
+  longitude String
   reviews Review[]
   likes Like[]
   created_at DateTime @default(now())
