@@ -27,6 +27,8 @@ model User {
   posts             Post[]
   comments          Comment[]
   atn               String   
+  reviews           Review[] @relation("ReviewUser")
+  likes             Like[]   @relation("LikeUser")
 }
 
 model Post {
@@ -60,5 +62,36 @@ model Comment {
   author     User     @relation(fields: [author_id], references: [idx])
 }
 
+model Store {
+  store_id Int      @id @default(autoincrement())
+  store_type    String
+	name       String
+  address    String
+  details    String
+  business_hours String
+  contact String
+  latitude String
+  longitude String
+  reviews Review[]
+  likes Like[]
+  created_at DateTime @default(now())
+}
 
+model Review {
+  review_id   Int      @id @default(autoincrement())
+  content     String
+  store_id    Int
+  user_id    String
+  user        User     @relation("ReviewUser", fields: [user_id], references: [user_id])
+  store     Store  @relation(fields: [store_id], references: [store_id])
+  created_at  DateTime @default(now())
+}
 
+model Like {
+  Like_id     Int      @id @default(autoincrement())
+  user_id     Int
+  store_id  Int
+  user        User     @relation("LikeUser", fields: [user_id], references: [idx])
+  store     Store  @relation(fields: [store_id], references: [store_id])
+  created_at  DateTime @default(now())
+}
