@@ -9,11 +9,9 @@ import {
   ForbiddenException,
   UnauthorizedException,
 } from '@nestjs/common';
-import { Roles } from './roles.decorator';
-import { RolesGuard } from './roles.guard';
-import { UsersService } from '../users.service';
+import { UsersService } from '../user/users.service';
 
-@Controller('admin') // @UseGuards(RolesGuard)
+@Controller('admin')
 export class AdminController {
   constructor(private readonly usersService: UsersService) {}
 
@@ -21,7 +19,8 @@ export class AdminController {
   async getUserList(
     @Req() request,
     @Query('page') page = 1,
-    @Query('perPage') perPage = 10,) {
+    @Query('perPage') perPage = 10,
+  ) {
     const accessToken = request.headers.authorization;
 
     if (!accessToken) {

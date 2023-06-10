@@ -24,9 +24,9 @@ model User {
   phone             String
   address           String
   birth             String
-
   posts             Post[]
-  comments   Comment[]
+  comments          Comment[]
+  atn               String   
 }
 
 model Post {

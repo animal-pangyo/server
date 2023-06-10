@@ -11,12 +11,11 @@ import {
   Req,
   Res,
 } from '@nestjs/common';
-import { JoinRequestDto } from './dto/join.request.dto';
-import { LoginDto } from './dto/login.dto';
-import { UpdateUserDto } from './dto/update.user.dto';
-import { FindAccountDto } from './dto/find.account.dto';
+import { JoinRequestDto } from '../dto/join.request.dto';
+import { LoginDto } from '../dto/login.dto';
+import { UpdateUserDto } from '../dto/update.user.dto';
+import { FindAccountDto } from '../dto/find.account.dto';
 import { UsersService } from './users.service';
-import { Request, Response } from 'express';
 
 @Controller('users')
 export class UsersController {
@@ -61,7 +60,6 @@ export class UsersController {
   // 아이디 찾기
   @Post(`find-account`)
   async findId(@Body() findAccountDto: FindAccountDto) {
-    Logger.log(`++++++++++`);
     return this.usersService.findUserId(findAccountDto);
   }
 
@@ -87,11 +85,11 @@ export class UsersController {
     return this.usersService.getUserInfoAndToken(userId);
   }
 
-  @Get('logout')
-  async logout(@Req() req, @Res() res) {
-    const sessionId = req.sessionID;
-    await this.usersService.logout(sessionId);
-    res.clearCookie('connect.sid'); 
+  @Get(`session/logout`)
+  async logout(@Body() data, @Res() res) {
+    const userId = data.user_id;
+    await this.usersService.logout(userId);
+    res.clearCookie('connect.sid');
     res.sendStatus(200);
   }
 }
