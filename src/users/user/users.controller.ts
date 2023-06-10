@@ -60,6 +60,7 @@ export class UsersController {
   // 아이디 찾기
   @Post(`find-account`)
   async findId(@Body() findAccountDto: FindAccountDto) {
+    console.log(findAccountDto);
     return this.usersService.findUserId(findAccountDto);
   }
 
@@ -72,7 +73,7 @@ export class UsersController {
   // 내 정보 조회
   @Get('refresh/mine')
   async getMyInfo(@Req() request) {
-    const accessToken = request.headers.authorization;
+    const accessToken = request.headers.authorization.split(' ')[1];
 
     if (!accessToken) {
       throw new UnauthorizedException('토큰이 없습니다');
@@ -85,9 +86,15 @@ export class UsersController {
     return this.usersService.getUserInfoAndToken(userId);
   }
 
-  @Get(`session/logout`)
-  async logout(@Body() data, @Res() res) {
-    const userId = data.user_id;
+  @Delete(`session/logout`)
+  async logout(@Req() request, @Res() res) {
+    const accessToken = request.headers.authorization.split(' ')[1];
+    if (!accessToken) {
+      throw new UnauthorizedException('토큰이 없습니다');
+    }
+    const userId = await this.usersService.verifyAccessTokenAndGetUserId(
+      accessToken,
+    );
     await this.usersService.logout(userId);
     res.clearCookie('connect.sid');
     res.sendStatus(200);

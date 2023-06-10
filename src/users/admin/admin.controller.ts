@@ -16,12 +16,11 @@ export class AdminController {
   constructor(private readonly usersService: UsersService) {}
 
   @Get('user-list')
-  async getUserList(
-    @Req() request,
-    @Query('page') page = 1,
-    @Query('perPage') perPage = 10,
-  ) {
-    const accessToken = request.headers.authorization;
+  async getUserList(@Req() request, @Query('page') page) {
+    console.log(page);
+    const token = request.headers.authorization;
+    console.log(token);
+    const accessToken = token.split(' ')[1];
 
     if (!accessToken) {
       throw new UnauthorizedException('토큰이 없습니다');
@@ -30,20 +29,24 @@ export class AdminController {
     const userId = await this.usersService.verifyAccessTokenAndGetUserId(
       accessToken,
     );
+    //localhost:5173/admin/user-list?page=1
 
+    console.log('1', accessToken);
+    console.log('2', userId);
     const user = await this.usersService.getUser(userId);
-
+    console.log('3', user);
     if (user.roles !== 'admin') {
       throw new ForbiddenException('admin 계정이 아닙니다.');
     }
-
-    return this.usersService.getUserList(page, perPage);
+    console.log('4', user.roles);
+    return this.usersService.getUserList(page, 10);
   }
 
-  @Delete(':user_id')
+  @Delete('delete-user/:user_id')
   async deleteUser(@Param('user_id') user_id, @Req() request) {
-    const accessToken = request.headers.authorization;
-
+    const token = request.headers.authorization;
+    console.log(token);
+    const accessToken = token.split(' ')[1];
     if (!accessToken) {
       throw new UnauthorizedException('토큰이 없습니다');
     }

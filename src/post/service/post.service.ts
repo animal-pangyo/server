@@ -32,7 +32,7 @@ export class PostService {
     });
   }
 
-  async getFreePosts(page: number): Promise<any> {
+  async getFreePosts(page: number, keyword: string): Promise<any> {
     const pageSize = 10;
     const skip = (page - 1) * pageSize || 0;
     const take = pageSize;
@@ -41,8 +41,19 @@ export class PostService {
       this.prismaService.post.findMany({
         where: {
           board: {
-            board_type: 'free',
+            board_type: {
+              equals: 'free',
+            },
           },
+          ...(keyword
+            ? {
+                AND: {
+                  title: {
+                    equals: keyword,
+                  },
+                },
+              }
+            : {}),
         },
         skip,
         take,
@@ -74,6 +85,7 @@ export class PostService {
       where: {
         post_id: postId,
       },
+      include: { comments: true },
     });
 
     if (!post) {
@@ -137,7 +149,7 @@ export class PostService {
     return this.prismaService.post.findMany({
       where: {
         board: {
-          board_type: 'inquiries',
+          board_type: 'inquiry',
         },
       },
     });
@@ -155,7 +167,7 @@ export class PostService {
       this.prismaService.post.findMany({
         where: {
           board: {
-            board_type: 'inquiries',
+            board_type: 'inquiry',
           },
         },
         skip,
@@ -167,7 +179,7 @@ export class PostService {
       this.prismaService.post.count({
         where: {
           board: {
-            board_type: 'inquiries',
+            board_type: 'inquiry',
           },
         },
       }),
@@ -263,7 +275,6 @@ export class PostService {
         idx: true,
       },
     });
-
     // board_type 값을 사용하여 board 정보를 조회합니다.
     const board = await this.prismaService.board.findFirst({
       where: {
@@ -273,9 +284,10 @@ export class PostService {
         board_id: true,
       },
     });
+    console.log(board, 'post service');
     return this.prismaService.post.create({
       data: {
-        author_id: user.idx,
+        author_id: user_id,
         board_id: board.board_id,
         title: createPostDto.title,
         content: createPostDto.content,

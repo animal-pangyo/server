@@ -27,11 +27,14 @@ export class PostController {
   }
 
   @Get('/free')
-  async getFreePosts(@Query('page') page): Promise<PrismaPost[]> {
+  async getFreePosts(
+    @Query('page') page,
+    @Query('keyword') keyword,
+  ): Promise<PrismaPost[]> {
     if (page === 'all') {
       return this.postService.getAllFreePosts();
     } else {
-      return this.postService.getFreePosts(page);
+      return this.postService.getFreePosts(page, keyword);
     }
   }
 
