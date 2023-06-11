@@ -41,7 +41,6 @@ export class StoreController {
       const storeIntId = parseInt(storeId, 10);
       return this.storeService.getDeatilStore(storeIntId);
     }
-    console.log(userId, 'con stsssss');
   }
 
   @Get('find')

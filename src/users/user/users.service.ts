@@ -26,9 +26,12 @@ export class UsersService {
     user_name: string,
     pwd: string,
     pwdConfirm: string,
-    birth: string,
+    address1: string,
+    address2: string,
     phone: string,
-    address: string,
+    year: string,
+    month: string,
+    day: string,
   ): Promise<{ message: string }> {
     const hashedPwd = await this.hashService.hashPwd(pwd);
     const existingUser = await this.prisma.user.findFirst({
@@ -59,9 +62,12 @@ export class UsersService {
         pwd: hashedPwd,
         roles: 'user',
         updated_at: new Date(),
-        birth,
+        year,
+        month,
+        day,
         phone,
-        address,
+        address1,
+        address2,
         atn: '',
       },
     });
@@ -104,8 +110,11 @@ export class UsersService {
       email: user.email,
       roles: user.roles,
       phone: user.phone,
-      address: user.address,
-      birth: user.birth,
+      address1: user.address1,
+      address2: user.address2,
+      year: user.year,
+      month: user.month,
+      day: user.day,
     };
   }
 
@@ -130,20 +139,22 @@ export class UsersService {
     const user = await this.prisma.user.findUnique({
       where: { user_id },
     });
-
     if (!user) {
       throw new NotFoundException('유저가 존재하지 않습니다.');
     }
-
-    return {
+    const newUser = {
       user_id: user.user_id,
       user_name: user.user_name,
       email: user.email,
       roles: user.roles,
       phone: user.phone,
-      address: user.address,
-      birth: user.birth,
+      address1: user.address1,
+      address2: user.address2,
+      year: user.year,
+      month: user.month,
+      day: user.day,
     };
+    return newUser;
   }
 
   async getUserInfoAndToken(user_id: string): Promise<User> {
@@ -168,8 +179,11 @@ export class UsersService {
       email: user.email,
       roles: user.roles,
       phone: user.phone,
-      address: user.address,
-      birth: user.birth,
+      address1: user.address1,
+      address2: user.address2,
+      year: user.year,
+      month: user.month,
+      day: user.day,
     };
   }
 
@@ -180,14 +194,21 @@ export class UsersService {
     const user = await this.prisma.user.findUnique({
       where: { user_id },
     });
-
     if (!user) {
       throw new NotFoundException('유저를 찾을 수 없습니다');
     }
-
     const updatedUser = await this.prisma.user.update({
       where: { user_id },
-      data: updateUserDto,
+      data: {
+        user_name: updateUserDto.name,
+        email: updateUserDto.email,
+        phone: updateUserDto.phone,
+        year: updateUserDto.year,
+        month: updateUserDto.month,
+        day: updateUserDto.day,
+        address1: updateUserDto.address1,
+        address2: updateUserDto.address2,
+      },
     });
 
     return { message: '성공적으로 수정되었습니다', updateUserDto };

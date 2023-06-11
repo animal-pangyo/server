@@ -14,7 +14,6 @@ export class AdminService {
   async getUserList(page, perPage) {
     const skip = (page - 1) * perPage;
     const take = perPage;
-
     const users = await this.prisma.user.findMany({
       select: {
         user_id: true,
@@ -22,8 +21,11 @@ export class AdminService {
         email: true,
         roles: true,
         phone: true,
-        address: true,
-        birth: true,
+        address1: true,
+        address2: true,
+        year: true,
+        month: true,
+        day: true,
       },
       skip,
       take,
