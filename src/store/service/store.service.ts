@@ -13,10 +13,10 @@ export class StoreService {
   constructor(private readonly prismaService: PrismaService) {}
 
   async getDeatilStore(storeId: number, userId?: string) {
-    console.log("ddd", storeId, userId)
-    let userKey
-    if(userId){
-       userKey = await this.prismaService.user.findUnique({
+    console.log('ddd', storeId, userId);
+    let userKey;
+    if (userId) {
+      userKey = await this.prismaService.user.findUnique({
         where: {
           user_id: userId,
         },
@@ -25,18 +25,18 @@ export class StoreService {
         },
       });
     }
-    console.log(userKey, "userKye")
+    console.log(userKey, 'userKye');
 
     const store = await this.prismaService.store.findUnique({
       where: {
         store_id: storeId,
       },
-      include: { 
-        reviews: true, 
+      include: {
+        reviews: true,
         likes: {
           where: { user_id: userKey.idx },
           select: { user_id: true },
-        }
+        },
       },
     });
 
@@ -251,18 +251,16 @@ export class StoreService {
         },
       });
 
-      return {result: "ok", message: "좋아요 성공"}
-
+      return { result: 'ok', message: '좋아요 성공' };
     } else if (existingLike && !isLike) {
-      console.log("좋아요 취소")
+      console.log('좋아요 취소');
       await this.prismaService.like.delete({
         where: {
           Like_id: existingLike.Like_id,
         },
       });
 
-      return {result: "ok", message: "좋아요 취소 성공"}
-
+      return { result: 'ok', message: '좋아요 취소 성공' };
     } else if (existingLike && isLike) {
       throw new NotFoundException('이미 좋아하는 업체입니다.');
     }

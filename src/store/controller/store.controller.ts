@@ -28,18 +28,19 @@ export class StoreController {
     return this.storeService.getStoresByType(storeType, page, sort);
   }
 
-
   @Get(':storeId')
-  async getDeatilStore(@Param('storeId') storeId: string, @Query('userId') userId?: string): Promise<Store> {
-    if(userId){
+  async getDeatilStore(
+    @Param('storeId') storeId: string,
+    @Query('userId') userId?: string,
+  ): Promise<Store> {
+    if (userId) {
       const storeIntId = parseInt(storeId, 10);
       return this.storeService.getDeatilStore(storeIntId, userId);
-    }else{
+    } else {
       const storeIntId = parseInt(storeId, 10);
       return this.storeService.getDeatilStore(storeIntId);
     }
-    console.log(userId, "con stsssss")
-    
+    console.log(userId, 'con stsssss');
   }
 
   @Get('find')
