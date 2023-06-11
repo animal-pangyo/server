@@ -14,7 +14,6 @@ import { CreateReviewDto } from '../dto/create-review.dto';
 import { CreateLikeDto } from '../dto/create-like.dto';
 import { CreateStoreDto } from '../dto/create-store.dto';
 import { UpdateStoreDto } from '../dto/update-store.dto';
-import axios from 'axios';
 
 @Controller('stores')
 export class StoreController {
@@ -29,18 +28,19 @@ export class StoreController {
     return this.storeService.getStoresByType(storeType, page, sort);
   }
 
-
   @Get(':storeId')
-  async getDeatilStore(@Param('storeId') storeId: string, @Query('userId') userId?: string): Promise<Store> {
-    if(userId){
+  async getDeatilStore(
+    @Param('storeId') storeId: string,
+    @Query('userId') userId?: string,
+  ): Promise<Store> {
+    if (userId) {
       const storeIntId = parseInt(storeId, 10);
       return this.storeService.getDeatilStore(storeIntId, userId);
-    }else{
+    } else {
       const storeIntId = parseInt(storeId, 10);
       return this.storeService.getDeatilStore(storeIntId);
     }
-    console.log(userId, "con stsssss")
-    
+    console.log(userId, 'con stsssss');
   }
 
   @Get('find')
@@ -49,49 +49,46 @@ export class StoreController {
   }
 
   @Get('map')
-  async getCafes(
+  async getStores(
     @Query('latitude') latitude: number,
     @Query('longitude') longitude: number,
     @Query('keyword') keyword: string,
     @Query('address') address: string,
   ) {
-    const apiKey = process.env.KAKAO_API_KEY;
     try {
       if (!address) {
-        console.log('유저 위치 받을떄 -----------------');
+        console.log('유저위치로 검색 -----------------');
+
         return this.storeService.getLocationByPosition(
           latitude,
           longitude,
           keyword,
         );
       } else {
-        console.log('address받을떄 -----------------');
+        console.log('입력주소로 검색 -----------------');
         const url = `https://dapi.kakao.com/v2/local/search/address.json?query=${decodeURIComponent(
           address,
         )}`;
 
-        const response = await axios.get(url, {
-          headers: {
-            Authorization: `KakaoAK ${apiKey}`,
-          },
-        });
-
+        const response = await this.storeService.reqToMapApi(url);
+        console.log(response.data);
         const { documents } = response.data;
         if (documents.length > 0) {
           const { x, y } = documents[0].address;
           const latitudex = x;
           const longitudey = y;
+          console.log(latitudex, longitudey);
           return this.storeService.getLocationByPosition(
             latitudex,
             longitudey,
             keyword,
           );
         } else {
-          throw new Error('No coordinates found for the given address');
+          throw new Error('요청 받은 주소로 위도와 경도를 찾지 못하였습니다.');
         }
       }
     } catch (error) {
-      throw new Error('Failed to fetch nearby datas');
+      throw new Error('가까운 업체를 찾지 못하였습니다.');
     }
   }
 

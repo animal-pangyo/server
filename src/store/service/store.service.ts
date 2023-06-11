@@ -13,10 +13,10 @@ export class StoreService {
   constructor(private readonly prismaService: PrismaService) {}
 
   async getDeatilStore(storeId: number, userId?: string) {
-    console.log("ddd", storeId, userId)
-    let userKey
-    if(userId){
-       userKey = await this.prismaService.user.findUnique({
+    console.log('ddd', storeId, userId);
+    let userKey;
+    if (userId) {
+      userKey = await this.prismaService.user.findUnique({
         where: {
           user_id: userId,
         },
@@ -25,18 +25,18 @@ export class StoreService {
         },
       });
     }
-    console.log(userKey, "userKye")
+    console.log(userKey, 'userKye');
 
     const store = await this.prismaService.store.findUnique({
       where: {
         store_id: storeId,
       },
-      include: { 
-        reviews: true, 
+      include: {
+        reviews: true,
         likes: {
           where: { user_id: userKey.idx },
           select: { user_id: true },
-        }
+        },
       },
     });
 
@@ -120,6 +120,23 @@ export class StoreService {
       contact,
     } = createStoreDto;
 
+    // const url = `https://dapi.kakao.com/v2/local/search/address.json?query=${decodeURIComponent(
+    //   address,
+    // )}`;
+    // const response = await this.reqToMapApi(url);
+
+    // const { documents } = response.data;
+    // const { x, y } = documents[0].address;
+    // const latitudex = x;
+    // const longitudey = y;
+
+    // const nearbyData = this.getLocationByPosition(
+    //   latitudex,
+    //   longitudey,
+    //   store_type,
+    // );
+    // console.log(nearbyData);
+
     const placeInfo = await this.getPlaceInfo(createStoreDto.address);
 
     const store = await this.prismaService.store.create({
@@ -141,19 +158,12 @@ export class StoreService {
   }
 
   private async getPlaceInfo(address) {
-    const apiKey = process.env.KAKAO_API_KEY;
-
     const url = `https://dapi.kakao.com/v2/local/search/keyword.json?query=${encodeURIComponent(
       address,
     )}`;
-
+    console.log(address);
     try {
-      const response = await axios.get(url, {
-        headers: {
-          Authorization: `KakaoAK ${apiKey}`,
-        },
-      });
-
+      const response = await this.reqToMapApi(url);
       const place = response.data.documents.map((data) => ({
         id: data.id,
         name: data.place_name,
@@ -164,7 +174,6 @@ export class StoreService {
 
       const placeInfo = place[0];
 
-      console.log(place[0]);
       return placeInfo;
     } catch (error) {
       console.error('Error fetching place info from Kakao API:', error);
@@ -242,18 +251,16 @@ export class StoreService {
         },
       });
 
-      return {result: "ok", message: "좋아요 성공"}
-
+      return { result: 'ok', message: '좋아요 성공' };
     } else if (existingLike && !isLike) {
-      console.log("좋아요 취소")
+      console.log('좋아요 취소');
       await this.prismaService.like.delete({
         where: {
           Like_id: existingLike.Like_id,
         },
       });
 
-      return {result: "ok", message: "좋아요 취소 성공"}
-
+      return { result: 'ok', message: '좋아요 취소 성공' };
     } else if (existingLike && isLike) {
       throw new NotFoundException('이미 좋아하는 업체입니다.');
     }
@@ -276,25 +283,6 @@ export class StoreService {
     return { message: '업체가 삭제되었습니다.' };
   }
 
-  async nearByStore(data) {
-    const storeData = data;
-    const stores = await this.getAllStores();
-
-    console.log('storeData : ', storeData);
-    console.log('stores : ', stores);
-
-    const filteredData = storeData.filter((storeDataItem) => {
-      const matchedStore = stores.find(
-        (store) => storeDataItem.id === store.address_id,
-      );
-      return !!matchedStore;
-    });
-
-    console.log('%filteredData%%%%%%%%', filteredData);
-
-    return filteredData;
-  }
-
   private async getAllStores() {
     const allStore = this.prismaService.store.findMany();
     return allStore;
@@ -310,6 +298,17 @@ export class StoreService {
     console.log(stores);
 
     return stores;
+  }
+
+  async reqToMapApi(url) {
+    const apiKey = process.env.KAKAO_API_KEY;
+
+    const response = await axios.get(url, {
+      headers: {
+        Authorization: `KakaoAK ${apiKey}`,
+      },
+    });
+    return response;
   }
 
   async getLocationByPosition(latitude, longitude, keyword) {
@@ -328,17 +327,43 @@ export class StoreService {
       key,
     )}`;
 
-    const response = await axios.get(url, {
-      headers: {
-        Authorization: `KakaoAK ${apiKey}`,
-      },
-    });
-
+    const response = await this.reqToMapApi(url);
     const data = response.data.documents.map((data) => ({
       id: data.id,
       name: data.place_name,
       address: data.address_name,
     }));
     return this.nearByStore(data);
+  }
+
+  async nearByStore(data) {
+    const storeData = data;
+    const stores = await this.getAllStores();
+
+    // const matchedStores = [];
+    // for (const data of storeData) {
+    //   for (const store of stores) {
+    //     if (data.id === store.address_id) {
+    //       matchedStores.push(data);
+    //     }
+    //   }
+    // }
+
+    // console.log(stores, '<<<<<<<<<<<<<<<stores>>>>>>>>>>>>');
+    // console.log(storeData, '<<<<<<<<<<<<<<<storeData>>>>>>>>>>>>');
+
+    const matchedStores = [];
+    for (const store of stores) {
+      for (const data of storeData) {
+        const storeName = store.name.toLowerCase();
+        const dataName = data.name.toLowerCase();
+        if (storeName.includes(dataName) || dataName.includes(storeName)) {
+          matchedStores.push(data);
+        }
+      }
+    }
+
+    console.log(matchedStores);
+    return matchedStores;
   }
 }

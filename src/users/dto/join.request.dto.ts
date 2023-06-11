@@ -5,7 +5,10 @@ export class JoinRequestDto {
   public user_name: string;
   public pwd: string;
   public pwdConfirm: string;
-  public birth: string;
+  public year: string;
+  public month: string;
+  public day: string;
   public phone: string;
-  public address: string;
+  public address1: string;
+  public address2: string;
 }
