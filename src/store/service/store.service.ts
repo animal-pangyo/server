@@ -223,6 +223,45 @@ export class StoreService {
     });
   }
 
+  async getReview(storeId: number): Promise<any> {
+    const review = await this.prismaService.review.findUnique({
+      where: { storeId },
+    });
+
+    if (!review) {
+      throw new NotFoundException('리뷰가 존재하지 않습니다.');
+    }
+    return review;
+  }
+
+  async updateReview(
+    storeId: number,
+    createReviewDto: CreateReviewDto,
+  ): Promise<any> {
+    const review = await this.prismaService.review.findUnique({
+      where: { storeId },
+    });
+    if (!review) {
+      throw new NotFoundException('리뷰가 존재하지 않습니다.');
+    }
+    const updatedReview = await this.prismaService.review.update({
+      where: { storedId },
+      data: createReviewDto,
+    });
+    return { message: '성공적으로 수정되었습니다', createReviewDto };
+  }
+
+  async deleteReview(storeId: number): Promise<any> {
+    const review = await this.prismaService.review.findUnique({
+      where: { storeId },
+    });
+    if (!review) {
+      throw new NotFoundException('리뷰가 존재하지 않습니다.');
+    }
+    await this.prismaService.review.delete({ where: { storeId } });
+    return { message: `리뷰가 성공적으로 삭제되었습니다.` };
+  }
+
   async likeStore(createLikeDto: CreateLikeDto): Promise<void> {
     const { userId, storeId, isLike } = createLikeDto;
 
@@ -339,26 +378,18 @@ export class StoreService {
   async nearByStore(data) {
     const storeData = data;
     const stores = await this.getAllStores();
-
-    // const matchedStores = [];
-    // for (const data of storeData) {
-    //   for (const store of stores) {
-    //     if (data.id === store.address_id) {
-    //       matchedStores.push(data);
-    //     }
-    //   }
-    // }
-
-    // console.log(stores, '<<<<<<<<<<<<<<<stores>>>>>>>>>>>>');
-    // console.log(storeData, '<<<<<<<<<<<<<<<storeData>>>>>>>>>>>>');
-
     const matchedStores = [];
     for (const store of stores) {
       for (const data of storeData) {
         const storeName = store.name.toLowerCase();
         const dataName = data.name.toLowerCase();
         if (storeName.includes(dataName) || dataName.includes(storeName)) {
-          matchedStores.push(data);
+          matchedStores.push({
+            store_id: store.store_id,
+            name: store.name,
+            latitude: store.latitude,
+            longitude: store.longitude,
+          });
         }
       }
     }
