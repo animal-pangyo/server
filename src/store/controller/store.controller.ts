@@ -28,7 +28,7 @@ export class StoreController {
     return this.storeService.getStoresByType(storeType, page, sort);
   }
 
-  @Get(':storeId')
+  @Get('detail/:storeId')
   async getDeatilStore(
     @Param('storeId') storeId: string,
     @Query('userId') userId?: string,
@@ -111,6 +111,24 @@ export class StoreController {
     @Body() createReviewDto: CreateReviewDto,
   ): Promise<Review> {
     return this.storeService.createReview(storeId, createReviewDto);
+  }
+
+  @Get('/:storeId/reviews')
+  async getReview(@Param('storeId') storeId: number): Promise<Review> {
+    return this.storeService.getReview(storeId);
+  }
+
+  @Patch('/:storeId/reviews')
+  async updateReview(
+    @Param('storeId') storeId: number,
+    @Body() createReviewDto: CreateReviewDto,
+  ): Promise<Review> {
+    return this.storeService.updateReview(storeId, createReviewDto);
+  }
+
+  @Delete('/:storeId/reviews')
+  async deleteReview(@Param('storeId') storeId: number): Promise<Review> {
+    return this.storeService.deleteReview(storeId);
   }
 
   @Post('/likes')
