@@ -82,6 +82,7 @@ model Store {
 model Review {
   review_id   Int      @id @default(autoincrement())
   content     String
+  title       String
   store_id    Int
   user_id    String
   user        User     @relation("ReviewUser", fields: [user_id], references: [user_id], onDelete: Cascade)

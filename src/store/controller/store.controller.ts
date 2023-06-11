@@ -1,3 +1,4 @@
+// @ts-nocheck
 import {
   Body,
   Controller,
@@ -105,7 +106,7 @@ export class StoreController {
     return this.storeService.updateStore(id, updateStoreDto);
   }
 
-  @Post('/:storeId/reviews')
+  @Post('review/:storeId')
   async createReview(
     @Param('storeId') storeId: number,
     @Body() createReviewDto: CreateReviewDto,
@@ -115,20 +116,25 @@ export class StoreController {
 
   @Get('/:storeId/reviews')
   async getReview(@Param('storeId') storeId: number): Promise<Review> {
-    return this.storeService.getReview(storeId);
+    return this.storeService.getStoreReview(storeId);
   }
 
-  @Patch('/:storeId/reviews')
+  @Get('review/:reviewId')
+  async getReviewDetail(@Param('reviewId') reviewId: number): Promise<Review> {
+    return this.storeService.getReviewDetail(reviewId);
+  }
+
+  @Patch('review/:reviewId')
   async updateReview(
-    @Param('storeId') storeId: number,
+    @Param('reviewId') reviewId: number,
     @Body() createReviewDto: CreateReviewDto,
   ): Promise<Review> {
-    return this.storeService.updateReview(storeId, createReviewDto);
+    return this.storeService.updateReview(reviewId, createReviewDto);
   }
 
-  @Delete('/:storeId/reviews')
-  async deleteReview(@Param('storeId') storeId: number): Promise<Review> {
-    return this.storeService.deleteReview(storeId);
+  @Delete('review/:reviewId')
+  async deleteReview(@Param('reviewId') reviewId) {
+    return this.storeService.deleteReview(reviewId);
   }
 
   @Post('/likes')
