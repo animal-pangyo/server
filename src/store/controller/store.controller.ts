@@ -54,6 +54,45 @@ export class StoreController {
     @Query('longitude') longitude: number,
     @Query('keyword') keyword: string,
     @Query('address') address: string,
+    @Query('qa') qa: number,
+    @Query('ha') ha: number,
+    @Query('oa') oa: number,
+    @Query('pa') pa: number,
+  ) {
+    try {
+      //https://dapi.kakao.com/v2/local/search/keyword.json?y=${latitude}&x=${longitude}&query=${encodeURIComponent(
+      // const url = `https://dapi.kakao.com/v2/local/search/address.json?query=${decodeURIComponent(
+      //   address,
+      // )}`;
+
+      const url = `https://dapi.kakao.com/v2/local/search/address.json?qa=${qa}&ha=${ha}&oa=${oa}&pa=${pa}`;
+      const response = await this.storeService.reqToMapApi(url);
+      console.log(response.data);
+      const { documents } = response.data;
+      if (documents.length > 0) {
+        const { x, y } = documents[0].address;
+        const latitudex = x;
+        const longitudey = y;
+        console.log(latitudex, longitudey);
+        return this.storeService.getLocationByPosition(
+          latitudex,
+          longitudey,
+          keyword,
+        );
+      } else {
+        throw new Error('요청 받은 주소로 위도와 경도를 찾지 못하였습니다.');
+      }
+    } catch (error) {
+      throw new Error('가까운 업체를 찾지 못하였습니다.');
+    }
+  }
+
+  @Get('test/map')
+  async getStores(
+    @Query('latitude') latitude: number,
+    @Query('longitude') longitude: number,
+    @Query('keyword') keyword: string,
+    @Query('address') address: string,
   ) {
     try {
       if (!address) {
