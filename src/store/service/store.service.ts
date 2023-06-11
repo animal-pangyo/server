@@ -212,7 +212,7 @@ export class StoreService {
     storeId: number,
     createReviewDto: CreateReviewDto,
   ): Promise<any> {
-    const { content, userId } = createReviewDto;
+    const { content, userId } = `createReviewDto`;
 
     return this.prismaService.review.create({
       data: {
@@ -223,9 +223,20 @@ export class StoreService {
     });
   }
 
-  async getReview(storeId: number): Promise<any> {
+  async getStoreReview(storeId) {
+    const review = await this.prismaService.review.findMany({
+      where: { store_id: Number(storeId) },
+    });
+
+    if (!review) {
+      throw new NotFoundException('리뷰가 존재하지 않습니다.');
+    }
+    return review;
+  }
+
+  async getReviewDetail(reviewId) {
     const review = await this.prismaService.review.findUnique({
-      where: { storeId },
+      where: { review_id: Number(reviewId) },
     });
 
     if (!review) {
@@ -235,30 +246,40 @@ export class StoreService {
   }
 
   async updateReview(
-    storeId: number,
+    reviewId: number,
     createReviewDto: CreateReviewDto,
   ): Promise<any> {
-    const review = await this.prismaService.review.findUnique({
-      where: { storeId },
+    console.log(createReviewDto);
+    const existingReview = await this.prismaService.review.findUnique({
+      where: { review_id: Number(reviewId) },
     });
-    if (!review) {
-      throw new NotFoundException('리뷰가 존재하지 않습니다.');
+
+    if (!existingReview) {
+      throw new NotFoundException('리뷰를 찾을 수 없습니다.');
     }
+
     const updatedReview = await this.prismaService.review.update({
-      where: { storedId },
-      data: createReviewDto,
+      where: { review_id: Number(reviewId) },
+      data: {
+        content: createReviewDto.content,
+        user_id: createReviewDto.userId,
+        store_id: createReviewDto.storeId,
+      },
     });
-    return { message: '성공적으로 수정되었습니다', createReviewDto };
+    return { message: '성공적으로 수정되었습니다', updatedReview };
   }
 
-  async deleteReview(storeId: number): Promise<any> {
+  async deleteReview(reviewId) {
     const review = await this.prismaService.review.findUnique({
-      where: { storeId },
+      where: { review_id: Number(reviewId) },
     });
+    console.log(review);
     if (!review) {
       throw new NotFoundException('리뷰가 존재하지 않습니다.');
     }
-    await this.prismaService.review.delete({ where: { storeId } });
+    await this.prismaService.review.delete({
+      where: { review_id: Number(reviewId) },
+    });
     return { message: `리뷰가 성공적으로 삭제되었습니다.` };
   }
 

@@ -12,4 +12,7 @@ export class CreateReviewDto {
   @IsNotEmpty()
   @IsInt()
   storeId: number;
+
+  @IsNotEmpty()
+  title: string;
 }
