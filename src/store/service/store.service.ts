@@ -12,6 +12,40 @@ import axios from 'axios';
 export class StoreService {
   constructor(private readonly prismaService: PrismaService) {}
 
+  async getDeatilStore(storeId: number, userId?: string) {
+    console.log("ddd", storeId, userId)
+    let userKey
+    if(userId){
+       userKey = await this.prismaService.user.findUnique({
+        where: {
+          user_id: userId,
+        },
+        select: {
+          idx: true,
+        },
+      });
+    }
+    console.log(userKey, "userKye")
+
+    const store = await this.prismaService.store.findUnique({
+      where: {
+        store_id: storeId,
+      },
+      include: { 
+        reviews: true, 
+        likes: {
+          where: { user_id: userKey.idx },
+          select: { user_id: true },
+        }
+      },
+    });
+
+    if (!store) {
+      throw new NotFoundException('게시글을 찾을 수 없습니다.');
+    }
+
+    return store;
+  }
   async getStoresByType(
     storeType: string,
     page: number,
@@ -183,7 +217,7 @@ export class StoreService {
   async likeStore(createLikeDto: CreateLikeDto): Promise<void> {
     const { userId, storeId, isLike } = createLikeDto;
 
-    const userKey = await this.prismaService.user.findUnique({
+    const userKey = await this.prismaService.user.findFirst({
       where: {
         user_id: userId,
       },
@@ -195,7 +229,7 @@ export class StoreService {
     const existingLike = await this.prismaService.like.findFirst({
       where: {
         user_id: userKey.idx,
-        store_id: storeId,
+        store_id: Number(storeId),
       },
     });
     console.log('existingLike', existingLike, isLike);
@@ -204,18 +238,26 @@ export class StoreService {
       await this.prismaService.like.create({
         data: {
           user_id: userKey.idx,
-          store_id: storeId,
+          store_id: Number(storeId),
         },
       });
+
+      return {result: "ok", message: "좋아요 성공"}
+
     } else if (existingLike && !isLike) {
+      console.log("좋아요 취소")
       await this.prismaService.like.delete({
         where: {
           Like_id: existingLike.Like_id,
         },
       });
+
+      return {result: "ok", message: "좋아요 취소 성공"}
+
     } else if (existingLike && isLike) {
       throw new NotFoundException('이미 좋아하는 업체입니다.');
     }
+    throw new NotFoundException('해당하는 업체를 찾을 수 없습니다.');
   }
 
   async deleteStore(id: number): Promise<any> {

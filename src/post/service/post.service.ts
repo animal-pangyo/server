@@ -47,10 +47,8 @@ export class PostService {
           },
           ...(keyword
             ? {
-                AND: {
-                  title: {
-                    equals: keyword,
-                  },
+                title: {
+                  contains: keyword,
                 },
               }
             : {}),
@@ -105,7 +103,7 @@ export class PostService {
     });
   }
 
-  async getNoticePosts(page: number): Promise<any> {
+  async getNoticePosts(page: number, keyword: string): Promise<any> {
     if (!page) {
       throw new NotFoundException('잘못된 api 요청');
     }
@@ -119,6 +117,13 @@ export class PostService {
           board: {
             board_type: 'notice',
           },
+          ...(keyword
+            ? {
+                title: {
+                  contains: keyword,
+                },
+              }
+            : {}),
         },
         skip,
         take,
@@ -155,7 +160,7 @@ export class PostService {
     });
   }
 
-  async getInquiryPosts(page: number): Promise<any> {
+  async getInquiryPosts(page: number, keyword: string): Promise<any> {
     if (!page) {
       throw new NotFoundException('잘못된 api 요청');
     }
@@ -169,6 +174,13 @@ export class PostService {
           board: {
             board_type: 'inquiry',
           },
+          ...(keyword
+            ? {
+                title: {
+                  contains: keyword,
+                },
+              }
+            : {}),
         },
         skip,
         take,
