@@ -29,6 +29,20 @@ export class StoreController {
     return this.storeService.getStoresByType(storeType, page, sort);
   }
 
+
+  @Get(':storeId')
+  async getDeatilStore(@Param('storeId') storeId: string, @Query('userId') userId?: string): Promise<Store> {
+    if(userId){
+      const storeIntId = parseInt(storeId, 10);
+      return this.storeService.getDeatilStore(storeIntId, userId);
+    }else{
+      const storeIntId = parseInt(storeId, 10);
+      return this.storeService.getDeatilStore(storeIntId);
+    }
+    console.log(userId, "con stsssss")
+    
+  }
+
   @Get('find')
   async searchStoresByName(@Query('keyword') keyword: string) {
     return this.storeService.searchStoresByName(keyword);
@@ -102,9 +116,9 @@ export class StoreController {
     return this.storeService.createReview(storeId, createReviewDto);
   }
 
-  @Post('/:storeId/likes')
+  @Post('/likes')
   async likeStore(@Body() createLikeDto: CreateLikeDto): Promise<void> {
-    await this.storeService.likeStore(createLikeDto);
+    return await this.storeService.likeStore(createLikeDto);
   }
 
   @Delete(':id')
