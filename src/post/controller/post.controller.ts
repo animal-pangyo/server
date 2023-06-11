@@ -39,20 +39,26 @@ export class PostController {
   }
 
   @Get('/inquiry')
-  async getInquiryPosts(@Query('page') page): Promise<PrismaPost[]> {
+  async getInquiryPosts(
+    @Query('page') page,
+    @Query('keyword') keyword,
+    ): Promise<PrismaPost[]> {
     if (page === 'all') {
       return this.postService.getAllInquiryPosts();
     } else {
-      return this.postService.getInquiryPosts(page);
+      return this.postService.getInquiryPosts(page, keyword);
     }
   }
 
   @Get('/notice')
-  async getNoticePosts(@Query('page') page): Promise<PrismaPost[]> {
+  async getNoticePosts(
+    @Query('page') page,
+    @Query('keyword') keyword,
+    ): Promise<PrismaPost[]> {
     if (page === 'all') {
       return this.postService.getAllNoticePosts();
     } else {
-      return this.postService.getNoticePosts(page);
+      return this.postService.getNoticePosts(page, keyword);
     }
   }
 
