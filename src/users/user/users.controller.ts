@@ -26,17 +26,18 @@ export class UsersController {
 
   @Post('join')
   async postUsers(@Body() data: JoinRequestDto) {
-    const address = data.address1 + data.address2;
-    const birth = data.year + data.month + data.day;
     return this.usersService.createUser(
       data.user_id,
       data.email,
       data.user_name,
       data.pwd,
       data.pwdConfirm,
-      birth,
       data.phone,
-      address,
+      data.address1,
+      data.address2,
+      data.year,
+      data.month,
+      data.day,
     );
   }
 
@@ -60,7 +61,6 @@ export class UsersController {
 
   @Post(`find-account`)
   async findId(@Body() findAccountDto: FindAccountDto) {
-    console.log(findAccountDto);
     return this.usersService.findUserId(findAccountDto);
   }
 

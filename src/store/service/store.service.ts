@@ -13,7 +13,6 @@ export class StoreService {
   constructor(private readonly prismaService: PrismaService) {}
 
   async getDeatilStore(storeId: number, userId?: string) {
-    console.log('ddd', storeId, userId);
     let userKey;
     if (userId) {
       userKey = await this.prismaService.user.findUnique({
@@ -120,23 +119,6 @@ export class StoreService {
       contact,
     } = createStoreDto;
 
-    // const url = `https://dapi.kakao.com/v2/local/search/address.json?query=${decodeURIComponent(
-    //   address,
-    // )}`;
-    // const response = await this.reqToMapApi(url);
-
-    // const { documents } = response.data;
-    // const { x, y } = documents[0].address;
-    // const latitudex = x;
-    // const longitudey = y;
-
-    // const nearbyData = this.getLocationByPosition(
-    //   latitudex,
-    //   longitudey,
-    //   store_type,
-    // );
-    // console.log(nearbyData);
-
     const placeInfo = await this.getPlaceInfo(createStoreDto.address);
 
     const store = await this.prismaService.store.create({
@@ -212,13 +194,15 @@ export class StoreService {
     storeId: number,
     createReviewDto: CreateReviewDto,
   ): Promise<any> {
-    const { content, userId } = `createReviewDto`;
+    console.log(createReviewDto);
+    const { title, content, user_id } = createReviewDto;
 
     return this.prismaService.review.create({
       data: {
-        content,
+        title: createReviewDto.title,
+        content: createReviewDto.content,
         store_id: Number(storeId),
-        user_id: userId,
+        user_id: createReviewDto.user_id,
       },
     });
   }
@@ -234,7 +218,7 @@ export class StoreService {
     return review;
   }
 
-  async getReviewDetail(reviewId) {
+  async getReviewDetail(reviewId: number): Promise<Review> {
     const review = await this.prismaService.review.findUnique({
       where: { review_id: Number(reviewId) },
     });
@@ -242,6 +226,7 @@ export class StoreService {
     if (!review) {
       throw new NotFoundException('리뷰가 존재하지 않습니다.');
     }
+
     return review;
   }
 
@@ -253,7 +238,7 @@ export class StoreService {
     const existingReview = await this.prismaService.review.findUnique({
       where: { review_id: Number(reviewId) },
     });
-
+    console.log(existingReview);
     if (!existingReview) {
       throw new NotFoundException('리뷰를 찾을 수 없습니다.');
     }
@@ -262,24 +247,26 @@ export class StoreService {
       where: { review_id: Number(reviewId) },
       data: {
         content: createReviewDto.content,
-        user_id: createReviewDto.userId,
-        store_id: createReviewDto.storeId,
+        title: createReviewDto.title,
       },
     });
+
     return { message: '성공적으로 수정되었습니다', updatedReview };
   }
 
-  async deleteReview(reviewId) {
+  async deleteReview(reviewId: number) {
     const review = await this.prismaService.review.findUnique({
       where: { review_id: Number(reviewId) },
     });
-    console.log(review);
+
     if (!review) {
       throw new NotFoundException('리뷰가 존재하지 않습니다.');
     }
+
     await this.prismaService.review.delete({
       where: { review_id: Number(reviewId) },
     });
+
     return { message: `리뷰가 성공적으로 삭제되었습니다.` };
   }
 

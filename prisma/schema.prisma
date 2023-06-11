@@ -22,8 +22,11 @@ model User {
   updated_at        DateTime
   roles             String
   phone             String
-  address           String
-  birth             String
+  address1          String
+  address2          String
+  month             String
+  year              String
+  day               String
   posts             Post[]
   comments          Comment[]
   atn               String   @db.Text
@@ -83,10 +86,10 @@ model Review {
   review_id   Int      @id @default(autoincrement())
   content     String
   title       String
-  store_id    Int
-  user_id    String
-  user        User     @relation("ReviewUser", fields: [user_id], references: [user_id], onDelete: Cascade)
-  store     Store  @relation(fields: [store_id], references: [store_id])
+  store_id    Int      
+  user_id    String 
+  store     Store     @relation(fields: [store_id], references: [store_id])
+  user        User       @relation("ReviewUser", fields: [user_id], references: [user_id], onDelete: Cascade) 
   created_at  DateTime @default(now())
 }
 
