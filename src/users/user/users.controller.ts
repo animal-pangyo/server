@@ -5,7 +5,6 @@ import {
   Get,
   Patch,
   Param,
-  Logger,
   Delete,
   UnauthorizedException,
   Req,
@@ -16,39 +15,41 @@ import { LoginDto } from '../dto/login.dto';
 import { UpdateUserDto } from '../dto/update.user.dto';
 import { FindAccountDto } from '../dto/find.account.dto';
 import { UsersService } from './users.service';
+import { AdminService } from '../admin/admin.service';
 
 @Controller('users')
 export class UsersController {
-  constructor(private usersService: UsersService) {}
+  constructor(
+    private usersService: UsersService,
+    private adminService: AdminService,
+  ) {}
 
-  // 회원가입
   @Post('join')
   async postUsers(@Body() data: JoinRequestDto) {
+    const address = data.address1 + data.address2;
+    const birth = data.year + data.month + data.day;
     return this.usersService.createUser(
       data.user_id,
       data.email,
       data.user_name,
       data.pwd,
       data.pwdConfirm,
-      data.birth,
+      birth,
       data.phone,
-      data.address,
+      address,
     );
   }
 
-  // 로그인
   @Post(`login`)
   async logIn(@Body() loginDto: LoginDto) {
     return this.usersService.logIn(loginDto);
   }
 
-  // 유저 정보 조회
   @Get(':user_id')
   async getUsers(@Param('user_id') user_id: string) {
     return this.usersService.getUser(user_id);
   }
 
-  // 유저 정보 수정
   @Patch(':user_id')
   async updateUser(
     @Param('user_id') user_id: string,
@@ -57,20 +58,17 @@ export class UsersController {
     return this.usersService.updateUser(user_id, updateUserDto);
   }
 
-  // 아이디 찾기
   @Post(`find-account`)
   async findId(@Body() findAccountDto: FindAccountDto) {
     console.log(findAccountDto);
     return this.usersService.findUserId(findAccountDto);
   }
 
-  // 비번 리셋
   @Post(`reset-password`)
   async findPwd(@Body() findAccountDto: FindAccountDto) {
     return this.usersService.findUserPwd(findAccountDto);
   }
 
-  // 내 정보 조회
   @Get('refresh/mine')
   async getMyInfo(@Req() request) {
     const accessToken = request.headers.authorization.split(' ')[1];
@@ -79,7 +77,7 @@ export class UsersController {
       throw new UnauthorizedException('토큰이 없습니다');
     }
 
-    const userId = await this.usersService.verifyAccessTokenAndGetUserId(
+    const userId = await this.adminService.verifyAccessTokenAndGetUserId(
       accessToken,
     );
 
@@ -92,7 +90,7 @@ export class UsersController {
     if (!accessToken) {
       throw new UnauthorizedException('토큰이 없습니다');
     }
-    const userId = await this.usersService.verifyAccessTokenAndGetUserId(
+    const userId = await this.adminService.verifyAccessTokenAndGetUserId(
       accessToken,
     );
     await this.usersService.logout(userId);
