@@ -11,4 +11,5 @@ export class UpdateUserDto {
   public phone: string;
   public address1: string;
   public address2: string;
+  public atn: string;
 }

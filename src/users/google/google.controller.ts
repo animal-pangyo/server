@@ -20,13 +20,13 @@ export class GoogleController {
   async googleAuthRedirect(@Req() req, @Res() res) {
     const googleUser = req.user;
     const email = googleUser.email;
-    const accessToken = googleUser.accessToken;
     let user = await this.prisma.user.findUnique({
       where: { email },
     });
 
     if(user){
       const newToken = this.googleService.generateAccessToken(user);
+      this.googleService.updateUser(user.email, newToken)
     }
     
     if (!user){

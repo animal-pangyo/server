@@ -1,8 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import * as jwt from 'jsonwebtoken';
 import { User } from '../dto/user';
+import { UpdateUserDto } from '../dto/update.user.dto';
+import { PrismaService } from 'src/prisma.service';
 @Injectable()
 export class GoogleService {
+  constructor(
+    private prisma: PrismaService,
+  ) {}
   googleLogin(req) {
     if (!req.user) {
       return '유저 정보를 찾을 수 없습니다.';
@@ -29,4 +34,25 @@ export class GoogleService {
     const accessToken = jwt.sign(payload, secretKey, options);
     return accessToken;
   }
+
+  async updateUser(
+    email: string,
+    token : string,
+  ): Promise<any> {
+    const user = await this.prisma.user.findFirst({
+      where: {
+        email,
+      },
+    });
+    const updatedUser = await this.prisma.user.update({
+      where: {
+        user_id: email,
+      },
+      data: {
+        atn: token,
+      },
+    });
+
+   return user;
+}
 }
