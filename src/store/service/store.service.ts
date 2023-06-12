@@ -354,11 +354,12 @@ export class StoreService {
         Authorization: `KakaoAK ${apiKey}`,
       },
     });
-    console.log('여기까지오나??', response.document)
     return response;
   }
 
   async nearByStore(data) {
+
+    console.log('durlRKwl??')
     const storeData = data;
     const stores = await this.getAllStores();
     const matchedStores = [];
@@ -393,15 +394,15 @@ export class StoreService {
     };
     
     const levelMapping = {
-      1:100, 
-      2:200,
-      3:300,
-      4:400,
-      5:500,
+      1:500, 
+      2:1000,
+      3:1500,
+      4:2000,
+      5:2500,
     }
     
     const key = keywordMapping[keyword] || '';
-    const mylevel = levelMapping[level] !== undefined ? levelMapping[level] : 500;
+    const mylevel = levelMapping[level] !== undefined ? levelMapping[level] : 1500;
     const apiUrl = 'https://dapi.kakao.com/v2/local/search/keyword.json';
     const url2 = `${apiUrl}?y=${latitude}&x=${longitude}&radius=${mylevel}`;
     const apiKey = process.env.KAKAO_API_KEY;
@@ -420,7 +421,6 @@ export class StoreService {
         latitude: data.x,
         longitude: data.y,
       }));
-      console.log(place)
     } catch(e) {
       console.log(e)
     }

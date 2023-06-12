@@ -25,8 +25,10 @@ export class GoogleController {
       where: { email },
     });
 
-    const newToken = this.googleService.generateAccessToken(user);
-    console.log(googleUser)
+    if(user){
+      const newToken = this.googleService.generateAccessToken(user);
+    }
+    
     if (!user){
        user = await this.prisma.user.create({
         data: {
@@ -43,9 +45,10 @@ export class GoogleController {
           address2: '',
           user_name: googleUser.firstName,
           created_at: new Date(),
-          atn: newToken,
+          atn: '',
         },
       });
+      this.googleService.generateAccessToken(user);
     }
     return res.redirect(`http://localhost:${process.env.CLIENT_PORT}/login/callback?token=${user.atn}&email=${user.email}`);
   }
