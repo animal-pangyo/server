@@ -54,16 +54,18 @@ export class StoreController {
     @Query('longitude') longitude: number,
     @Query('keyword') keyword: string,
     @Query('address') address: string,
+    @Query('level') level:number,
   ) {
     try {
       if (!address) {
         console.log('유저위치로 검색 -----------------');
-
-        return this.storeService.getLocationByPosition(
+        const places = await this.storeService.getLocationByPositionTest(
           latitude,
           longitude,
           keyword,
+          level,
         );
+        return places;
       } else {
         console.log('입력주소로 검색 -----------------');
         const url = `https://dapi.kakao.com/v2/local/search/address.json?query=${decodeURIComponent(
@@ -82,6 +84,7 @@ export class StoreController {
             latitudex,
             longitudey,
             keyword,
+            level,
           );
         } else {
           throw new Error('요청 받은 주소로 위도와 경도를 찾지 못하였습니다.');

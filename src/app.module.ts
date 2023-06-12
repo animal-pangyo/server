@@ -22,7 +22,7 @@ import { UsersModule } from './users/user/users.module';
     StoreModule,
   ],
   controllers: [AppController],
-  providers: [AppService, GoogleStrategy], //GoogleStrategy
+  providers: [AppService, GoogleStrategy], 
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
