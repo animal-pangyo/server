@@ -357,10 +357,9 @@ export class StoreService {
     return response;
   }
 
-  async nearByStore(data) {
+  async nearByStore(place) {
 
-    console.log('durlRKwl??')
-    const storeData = data;
+    const storeData = place;
     const stores = await this.getAllStores();
     const matchedStores = [];
     for (const store of stores) {
@@ -406,7 +405,7 @@ export class StoreService {
     const apiUrl = 'https://dapi.kakao.com/v2/local/search/keyword.json';
     const url2 = `${apiUrl}?y=${latitude}&x=${longitude}&radius=${mylevel}`;
     const apiKey = process.env.KAKAO_API_KEY;
- 
+    let nearPlace = '';
     console.log(url2+`&query=${key}`)
     try {
       const response = await axios.get(url2+`&query=${key}`, {
@@ -420,12 +419,14 @@ export class StoreService {
         address: data.address_name,
         latitude: data.x,
         longitude: data.y,
+
       }));
+      const nearPlace = this.nearByStore(place);
     } catch(e) {
       console.log(e)
     }
 
-    return this.nearByStore(place);
+    return nearPlace;
   }
 
 }
