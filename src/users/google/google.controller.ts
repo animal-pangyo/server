@@ -48,7 +48,8 @@ export class GoogleController {
           atn: '',
         },
       });
-      this.googleService.generateAccessToken(user);
+      const newToken = this.googleService.generateAccessToken(user);
+      this.googleService.updateUser(user.email, newToken)
     }
     return res.redirect(`http://localhost:${process.env.CLIENT_PORT}/login/callback?token=${user.atn}&email=${user.email}`);
   }
