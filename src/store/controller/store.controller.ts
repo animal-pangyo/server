@@ -59,7 +59,7 @@ export class StoreController {
     try {
       if (!address) {
         console.log('유저위치로 검색 -----------------');
-        const places = await this.storeService.getLocationByPositionTest(
+        const places = await this.storeService.getLocationByPosition(
           latitude,
           longitude,
           keyword,

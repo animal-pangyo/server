@@ -25,6 +25,7 @@ export class GoogleController {
       where: { email },
     });
 
+    const newToken = this.googleService.generateAccessToken(user);
     console.log(googleUser)
     if (!user){
        user = await this.prisma.user.create({
@@ -42,7 +43,7 @@ export class GoogleController {
           address2: '',
           user_name: googleUser.firstName,
           created_at: new Date(),
-          atn: accessToken,
+          atn: newToken,
         },
       });
     }

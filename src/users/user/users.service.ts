@@ -118,7 +118,7 @@ export class UsersService {
     };
   }
 
-  private generateAccessToken(user: User): string {
+   generateAccessToken(user: User): string {
     const crypto = require('crypto');
     const secretKey = process.env.SECRET_KEY;
 

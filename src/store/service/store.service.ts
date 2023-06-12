@@ -358,70 +358,6 @@ export class StoreService {
     return response;
   }
 
-  async getPlacesWithinRadiusTest(latitude,longitude,keyword,level) {
-    
-    const apiUrl = 'https://dapi.kakao.com/v2/local/search/category.json';
-    const headers = { Authorization: 'KakaoAK YOUR_API_KEY' };
-  
-    const params = {
-      category_group_code: keyword,
-      x: longitude,
-      y: latitude,
-      radius : level,
-      sort: 'distance',
-    };
-
-    const apiKey = process.env.KAKAO_API_KEY;
-
-    const response = await axios.get(apiUrl, {
-      headers: {
-        Authorization: `KakaoAK ${apiKey}`,
-      },
-      params
-    });
-
-    const data = response.data;
-    console.log(data)
-    const places = data.documents.map((place: any) => place.place_name);
-    return places;
-  }
-
-  async getLocationByPosition(latitude, longitude, keyword, level) {
-    const keywordMapping = {
-      hospital: '동물병원',
-      cafe: '애견카페',
-      hotel: '애견호텔',
-      academy: '훈련소',
-      beauty: '반려동물미용',
-      funeral: '반려동물장례',
-      playground: '반려동물놀이터',
-    };
-    
-    const levelMapping = {
-      1:100, 
-      2:200,
-      3:300,
-      4:400,
-      5:500,
-    }
-
-    const key = keywordMapping[keyword] || '';
-    const mylevel = levelMapping[level] !== undefined ? levelMapping[level] : 500;
-
-    const url = `https://dapi.kakao.com/v2/local/search/keyword.json?y=${latitude}&x=${longitude}&query=${encodeURIComponent(
-      key,
-    )}&radius=${mylevel}`;
-
-    console.log(url)
-    const response = await this.reqToMapApi(url);
-    const data = response.data.documents.map((data) => ({
-      id: data.id,
-      name: data.place_name,
-      address: data.address_name,
-    }));
-    return this.nearByStore(data);
-  }
-
   async nearByStore(data) {
     const storeData = data;
     const stores = await this.getAllStores();
@@ -445,7 +381,7 @@ export class StoreService {
     return matchedStores;
   }
 
-  async getLocationByPositionTest(latitude, longitude, keyword, level) {
+  async getLocationByPosition(latitude, longitude, keyword, level) {
     const keywordMapping = {
       hospital: '동물병원',
       cafe: '애견카페',
@@ -467,20 +403,12 @@ export class StoreService {
     const key = keywordMapping[keyword] || '';
     const mylevel = levelMapping[level] !== undefined ? levelMapping[level] : 500;
     const apiUrl = 'https://dapi.kakao.com/v2/local/search/keyword.json';
-    const url2 = `${apiUrl}?y=${latitude}&x=${longitude}&radius=20000`;
-    console.log(latitude)
-    console.log(longitude)
-    console.log(url2)
-    // const url2 = `https://dapi.kakao.com/v2/local/search/category.json?y=${latitude}&x=${longitude}&radius=${mylevel}`;
-    // console.log(url2)
+    const url2 = `${apiUrl}?y=${latitude}&x=${longitude}&radius=${mylevel}`;
     const apiKey = process.env.KAKAO_API_KEY;
-    // console.log('여기까지오나??', apiKey)
-    // keyword.json?y=37.514322572335935&x=127.06283102249932&radius=20000"
-    // const url2 = 'https://dapi.kakao.com/v2/local/search/category.json?category\_group\_code=PM9&radius=20000'
-    // const url2 = 'https://dapi.kakao.com/v2/local/search/category.json?category\_group\_code=PM9&radius=20000'
-    
+ 
+    console.log(url2+`&query=${key}`)
     try {
-      const response = await axios.get(url2+`&query=카카오프렌즈`, {
+      const response = await axios.get(url2+`&query=${key}`, {
         headers: {
           Authorization: `KakaoAK ${apiKey}`,
         },
@@ -493,36 +421,9 @@ export class StoreService {
         longitude: data.y,
       }));
       console.log(place)
-    } catch(E) {
-      console.log(E)
+    } catch(e) {
+      console.log(e)
     }
-    
-
-    
-//     const url1 = 'https://dapi.kakao.com/v2/local/search/keyword.json';
-// const latitude1 = 37.514322572335935;
-// const longitude1 = 127.06283102249932;
-// const radius1 = 20000;
-// const keyword1 = '카카오프렌즈';
-// const apiKey1 = apiKey;
-
-// const headers = {
-//   Authorization: `KakaoAK ${apiKey1}`,
-// };
-
-// const params = {
-//   y: latitude1,
-//   x: longitude1,
-//   radius: radius1,
-//   query: keyword1,
-// };
-
-  // const response = await axios.get(url, {
-  //   headers: headers,
-  //   params: params,
-  // });
-
-   
 
     return this.nearByStore(place);
   }
