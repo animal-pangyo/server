@@ -9,11 +9,11 @@ export class GoogleController {
   constructor(
     private readonly googleService: GoogleService,
     private prisma: PrismaService,
-  ) {}
+  ) { }
 
   @Get()
   @UseGuards(AuthGuard('google'))
-  async googleAuth(@Req() req) {}
+  async googleAuth(@Req() req) { }
 
   @Get('redirect')
   @UseGuards(AuthGuard('google'))
@@ -24,13 +24,15 @@ export class GoogleController {
       where: { email },
     });
 
-    if(user){
-      const newToken = this.googleService.generateAccessToken(user);
+    let newToken = '';
+
+    if (user) {
+      newToken = this.googleService.generateAccessToken(user);
       this.googleService.updateUser(user.email, newToken)
     }
-    
-    if (!user){
-       user = await this.prisma.user.create({
+
+    if (!user) {
+      user = await this.prisma.user.create({
         data: {
           user_id: email,
           email: email,
@@ -48,9 +50,9 @@ export class GoogleController {
           atn: '',
         },
       });
-      const newToken = this.googleService.generateAccessToken(user);
+      newToken = this.googleService.generateAccessToken(user);
       this.googleService.updateUser(user.email, newToken)
     }
-    return res.redirect(`http://localhost:${process.env.CLIENT_PORT}/login/callback?token=${user.atn}&email=${user.email}`);
+    return res.redirect(`http://localhost:${process.env.CLIENT_PORT}/login/callback?token=${newToken}&email=${user.email}`);
   }
 }
