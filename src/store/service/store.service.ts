@@ -335,18 +335,6 @@ export class StoreService {
     return allStore;
   }
 
-  async searchStoresByName(keyword) {
-    const stores = await this.prismaService.store.findMany({
-      where: {
-        name: { contains: keyword },
-      },
-    });
-
-    console.log(stores);
-
-    return stores;
-  }
-
   async reqToMapApi(url) {
     const apiKey = process.env.KAKAO_API_KEY;
     const response = await axios.get(url, {
@@ -355,30 +343,6 @@ export class StoreService {
       },
     });
     return response;
-  }
-
-  async nearByStore(place) {
-
-    const storeData = place;
-    const stores = await this.getAllStores();
-    const matchedStores = [];
-    for (const store of stores) {
-      for (const data of storeData) {
-        const storeName = store.name.toLowerCase();
-        const dataName = data.name.toLowerCase();
-        if (storeName.includes(dataName) || dataName.includes(storeName)) {
-          matchedStores.push({
-            store_id: store.store_id,
-            name: store.name,
-            latitude: store.latitude,
-            longitude: store.longitude,
-          });
-        }
-      }
-    }
-
-    console.log(matchedStores);
-    return matchedStores;
   }
 
   async getLocationByPosition(latitude, longitude, keyword, level) {
@@ -391,42 +355,43 @@ export class StoreService {
       funeral: '반려동물장례',
       playground: '반려동물놀이터',
     };
-    
+
     const levelMapping = {
-      1:500, 
-      2:1000,
-      3:1500,
-      4:2000,
-      5:2500,
-    }
-    
+      1: 500,
+      2: 1000,
+      3: 1500,
+      4: 2000,
+      5: 2500,
+    };
+
     const key = keywordMapping[keyword] || '';
-    const mylevel = levelMapping[level] !== undefined ? levelMapping[level] : 1500;
+
+    const mylevel =
+      levelMapping[level] !== undefined ? levelMapping[level] : 5000;
+
     const apiUrl = 'https://dapi.kakao.com/v2/local/search/keyword.json';
     const url2 = `${apiUrl}?y=${latitude}&x=${longitude}&radius=${mylevel}`;
     const apiKey = process.env.KAKAO_API_KEY;
-    let nearPlace = '';
-    console.log(url2+`&query=${key}`)
+
+    const place = '';
     try {
-      const response = await axios.get(url2+`&query=${key}`, {
+      const response = await axios.get(url2 + `&query=${key}`, {
         headers: {
           Authorization: `KakaoAK ${apiKey}`,
         },
       });
+
       const place = response.data.documents.map((data) => ({
         id: data.id,
         name: data.place_name,
-        address: data.address_name,
+        address: data.road_address_name,
         latitude: data.x,
         longitude: data.y,
-
       }));
-      const nearPlace = this.nearByStore(place);
-    } catch(e) {
-      console.log(e)
+      return place;
+    } catch (e) {
+      console.log(e);
     }
-
-    return nearPlace;
+    return error;
   }
-
 }
