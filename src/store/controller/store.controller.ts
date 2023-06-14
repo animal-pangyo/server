@@ -43,18 +43,13 @@ export class StoreController {
     }
   }
 
-  @Get('find')
-  async searchStoresByName(@Query('keyword') keyword: string) {
-    return this.storeService.searchStoresByName(keyword);
-  }
-
   @Get('map')
   async getStores(
     @Query('latitude') latitude: number,
     @Query('longitude') longitude: number,
     @Query('keyword') keyword: string,
     @Query('address') address: string,
-    @Query('level') level:number,
+    @Query('level') level: number,
   ) {
     try {
       if (!address) {
