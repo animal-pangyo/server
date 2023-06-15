@@ -10,6 +10,8 @@ import { GoogleModule } from './users/google/google.module';
 import { StoreModule } from './store/store.module';
 import { AdminModule } from './users/admin/admin.module';
 import { UsersModule } from './users/user/users.module';
+import { HashService } from './users/user/hash.service';
+import { PrismaService } from './prisma.service';
 
 @Module({
   imports: [
@@ -22,7 +24,7 @@ import { UsersModule } from './users/user/users.module';
     StoreModule,
   ],
   controllers: [AppController],
-  providers: [AppService, GoogleStrategy], 
+  providers: [AppService, GoogleStrategy, HashService, PrismaService],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {

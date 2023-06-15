@@ -42,7 +42,7 @@ export class PostController {
   async getInquiryPosts(
     @Query('page') page,
     @Query('keyword') keyword,
-    ): Promise<PrismaPost[]> {
+  ): Promise<PrismaPost[]> {
     if (page === 'all') {
       return this.postService.getAllInquiryPosts();
     } else {
@@ -54,7 +54,7 @@ export class PostController {
   async getNoticePosts(
     @Query('page') page,
     @Query('keyword') keyword,
-    ): Promise<PrismaPost[]> {
+  ): Promise<PrismaPost[]> {
     if (page === 'all') {
       return this.postService.getAllNoticePosts();
     } else {

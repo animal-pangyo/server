@@ -12,9 +12,10 @@ import axios from 'axios';
 export class StoreService {
   constructor(private readonly prismaService: PrismaService) {}
 
-  async getDeatilStore(storeId: number, userId?: string) {
+  async getDeatilStore(storeId: number, storeName: string, userId?: string) {
     let userKey;
     if (userId) {
+      console.log(userKey, 'userKey');
       userKey = await this.prismaService.user.findUnique({
         where: {
           user_id: userId,
@@ -24,27 +25,35 @@ export class StoreService {
         },
       });
     }
-    console.log(userKey, 'userKye');
 
-    const store = await this.prismaService.store.findUnique({
-      where: {
-        store_id: storeId,
-      },
-      include: {
-        reviews: true,
-        likes: {
-          where: { user_id: userKey.idx },
-          select: { user_id: true },
-        },
+    const url = `https://dapi.kakao.com/v2/local/search/keyword.json`;
+
+    const apiKey = process.env.KAKAO_API_KEY;
+    const response = await axios.get(url + `?query=${storeName}`, {
+      headers: {
+        Authorization: `KakaoAK ${apiKey}`,
       },
     });
 
-    if (!store) {
-      throw new NotFoundException('게시글을 찾을 수 없습니다.');
+    const allSameNamePlace = response.data.documents;
+    const filteredPlaces = allSameNamePlace.filter(
+      (place) => place.id == storeId,
+    );
+
+    console.log(filteredPlaces);
+
+    if (!filteredPlaces) {
+      throw new NotFoundException('해당 업체의 정보를 찾을 수 없습니다.');
     }
 
-    return store;
+    const review = await this.prismaService.review.findMany({
+      where: { store_id: Number(storeId) },
+    });
+
+    console.log(review);
+    return { stores: filteredPlaces, reviews: review };
   }
+
   async getStoresByType(
     storeType: string,
     page: number,

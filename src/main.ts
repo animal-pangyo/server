@@ -1,12 +1,17 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
+import { AppService } from './app.service';
 require('dotenv').config();
 
 declare const module: any;
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, { cors: true });
+  const appService = app.get(AppService);
+
+  appService.executeAdmin();
+
   const port = process.env.PORT;
   await app.listen(port);
   console.log(`Listening on port ${port}`);
