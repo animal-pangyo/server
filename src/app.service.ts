@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from './prisma.service';
 import { HashService } from './users/user/hash.service';
 
-@Injectable()
+@Injectable() // 데코레이터를 사용하여 해당 클래스를 서비스로 지정
 export class AppService {
   constructor(
     private readonly prismaService: PrismaService,

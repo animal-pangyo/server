@@ -40,7 +40,11 @@ export class StoreController {
       return this.storeService.getDeatilStore(storeIntId, storeName, userId);
     } else {
       const storeIntId = parseInt(storeId, 10);
+<<<<<<< HEAD
       return this.storeService.getDeatilStore(storeIntId, storeName);
+=======
+      return this.storeService.getDeatilStore(storeIntId);
+>>>>>>> 98ad42468f1f723edf264fe034113592ca9c43af
     }
   }
 
