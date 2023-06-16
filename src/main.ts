@@ -13,6 +13,7 @@ async function bootstrap() {
   const appService = app.get(AppService);
 
   appService.executeAdmin();
+  appService.executeBoard();
 
   const port = process.env.PORT;
   await app.listen(port);

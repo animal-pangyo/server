@@ -38,4 +38,22 @@ export class AppService {
       });
     }
   }
+
+  async executeBoard() {
+    const board = await this.prismaService.board.findUnique({
+      where: { board_id: 1 },
+    });
+
+    if (!board) {
+      console.log(':: create boards ::');
+
+      await this.prismaService.board.createMany({
+        data: [
+          { board_name: '자유게시판', board_type: 'free' },
+          { board_name: '공지사항', board_type: 'notice' },
+          { board_name: 'FAQ', board_type: 'FAQ' },
+        ],
+      });
+    }
+  }
 }
