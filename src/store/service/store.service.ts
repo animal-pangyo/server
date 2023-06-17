@@ -12,9 +12,10 @@ import axios from 'axios';
 export class StoreService {
   constructor(private readonly prismaService: PrismaService) {}
 
-  async getDeatilStore(storeId: number, userId?: string) {
+  async getDeatilStore(storeId: number, storeName: string, userId?: string) {
     let userKey;
     if (userId) {
+      console.log(userKey, 'userKey');
       userKey = await this.prismaService.user.findUnique({
         where: {
           user_id: userId,
@@ -24,27 +25,44 @@ export class StoreService {
         },
       });
     }
-    console.log(userKey, 'userKye');
 
-    const store = await this.prismaService.store.findUnique({
-      where: {
-        store_id: storeId,
-      },
-      include: {
-        reviews: true,
-        likes: {
-          where: { user_id: userKey.idx },
-          select: { user_id: true },
-        },
+    const url = `https://dapi.kakao.com/v2/local/search/keyword.json`;
+
+    const apiKey = process.env.KAKAO_API_KEY;
+    const response = await axios.get(url + `?query=${storeName}`, {
+      headers: {
+        Authorization: `KakaoAK ${apiKey}`,
       },
     });
 
-    if (!store) {
-      throw new NotFoundException('게시글을 찾을 수 없습니다.');
+    const allSameNamePlace = response.data.documents;
+    const filteredPlaces = allSameNamePlace.filter(
+      (place) => place.id == storeId,
+    );
+
+    if (!filteredPlaces) {
+      throw new NotFoundException('해당 업체의 정보를 찾을 수 없습니다.');
     }
 
-    return store;
+    const review = await this.prismaService.review.findMany({
+      where: { store_id: Number(storeId) },
+    });
+
+    const existingLike = await this.prismaService.like.findFirst({
+      where: {
+        user_id: userKey.idx,
+        store_id: Number(storeId),
+      },
+    });
+    if (existingLike) {
+      filteredPlaces[0].like = true;
+    }
+
+    filteredPlaces[0].time = '9시-6시';
+
+    return { stores: filteredPlaces, reviews: review };
   }
+
   async getStoresByType(
     storeType: string,
     page: number,
@@ -328,70 +346,5 @@ export class StoreService {
     });
 
     return { message: '업체가 삭제되었습니다.' };
-  }
-
-  private async getAllStores() {
-    const allStore = this.prismaService.store.findMany();
-    return allStore;
-  }
-
-  async reqToMapApi(url) {
-    const apiKey = process.env.KAKAO_API_KEY;
-    const response = await axios.get(url, {
-      headers: {
-        Authorization: `KakaoAK ${apiKey}`,
-      },
-    });
-    return response;
-  }
-
-  async getLocationByPosition(latitude, longitude, keyword, level) {
-    const keywordMapping = {
-      hospital: '동물병원',
-      cafe: '애견카페',
-      hotel: '애견호텔',
-      academy: '훈련소',
-      beauty: '반려동물미용',
-      funeral: '반려동물장례',
-      playground: '반려동물놀이터',
-    };
-
-    const levelMapping = {
-      1: 500,
-      2: 1000,
-      3: 1500,
-      4: 2000,
-      5: 2500,
-    };
-
-    const key = keywordMapping[keyword] || '';
-
-    const mylevel =
-      levelMapping[level] !== undefined ? levelMapping[level] : 5000;
-
-    const apiUrl = 'https://dapi.kakao.com/v2/local/search/keyword.json';
-    const url2 = `${apiUrl}?y=${latitude}&x=${longitude}&radius=${mylevel}`;
-    const apiKey = process.env.KAKAO_API_KEY;
-
-    const place = '';
-    try {
-      const response = await axios.get(url2 + `&query=${key}`, {
-        headers: {
-          Authorization: `KakaoAK ${apiKey}`,
-        },
-      });
-
-      const place = response.data.documents.map((data) => ({
-        id: data.id,
-        name: data.place_name,
-        address: data.road_address_name,
-        latitude: data.x,
-        longitude: data.y,
-      }));
-      return place;
-    } catch (e) {
-      console.log(e);
-    }
-    return error;
   }
 }
