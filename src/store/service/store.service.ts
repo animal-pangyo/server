@@ -15,7 +15,6 @@ export class StoreService {
   async getDeatilStore(storeId: number, storeName: string, userId?: string) {
     let userKey;
     if (userId) {
-      console.log(userKey, 'userKey');
       userKey = await this.prismaService.user.findUnique({
         where: {
           user_id: userId,
@@ -26,6 +25,7 @@ export class StoreService {
       });
     }
 
+    console.log(userKey, 'userKey');
     const url = `https://dapi.kakao.com/v2/local/search/keyword.json`;
 
     const apiKey = process.env.KAKAO_API_KEY;
@@ -60,7 +60,7 @@ export class StoreService {
 
     filteredPlaces[0].time = '9시-6시';
 
-    return { stores: filteredPlaces, reviews: review };
+    return { stores: filteredPlaces[0], reviews: review };
   }
 
   async getStoresByType(
