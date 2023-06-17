@@ -10,6 +10,8 @@ import { GoogleModule } from './users/google/google.module';
 import { StoreModule } from './store/store.module';
 import { AdminModule } from './users/admin/admin.module';
 import { UsersModule } from './users/user/users.module';
+import { ServeStaticModule } from '@nestjs/serve-static';
+import { join } from 'path';
 
 @Module({
   imports: [
@@ -20,6 +22,9 @@ import { UsersModule } from './users/user/users.module';
     CommentModule,
     AdminModule,
     StoreModule,
+    ServeStaticModule.forRoot({
+      rootPath: join(__dirname, '..', 'client/dist'),
+    }),
   ],
   controllers: [AppController],
   providers: [AppService, GoogleStrategy], 
