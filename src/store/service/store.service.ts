@@ -56,6 +56,8 @@ export class StoreService {
     });
     if (existingLike) {
       filteredPlaces[0].like = true;
+    } else {
+      filteredPlaces[0].like = false;
     }
 
     filteredPlaces[0].time = '9시-6시';
