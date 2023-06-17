@@ -12,6 +12,8 @@ import { AdminModule } from './users/admin/admin.module';
 import { UsersModule } from './users/user/users.module';
 import { HashService } from './users/user/hash.service';
 import { PrismaService } from './prisma.service';
+import { ServeStaticModule } from '@nestjs/serve-static';
+import { join } from 'path';
 
 @Module({
   // 데코레이터를 사용하여 해당 클래스를 모듈로 지정
@@ -24,6 +26,9 @@ import { PrismaService } from './prisma.service';
     CommentModule,
     AdminModule,
     StoreModule,
+    ServeStaticModule.forRoot({
+      rootPath: join(__dirname, '..', 'client/dist'),
+    }),
   ],
   controllers: [AppController], // 해당 모듈에서 사용될 컨트롤러들을 지정
   providers: [AppService, GoogleStrategy, HashService, PrismaService], // 해당 모듈에서 사용될 프로바이더들을 지정

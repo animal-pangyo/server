@@ -40,8 +40,6 @@ export class StoreService {
       (place) => place.id == storeId,
     );
 
-    console.log(filteredPlaces);
-
     if (!filteredPlaces) {
       throw new NotFoundException('해당 업체의 정보를 찾을 수 없습니다.');
     }
@@ -50,7 +48,18 @@ export class StoreService {
       where: { store_id: Number(storeId) },
     });
 
-    console.log(review);
+    const existingLike = await this.prismaService.like.findFirst({
+      where: {
+        user_id: userKey.idx,
+        store_id: Number(storeId),
+      },
+    });
+    if (existingLike) {
+      filteredPlaces[0].like = true;
+    }
+
+    filteredPlaces[0].time = '9시-6시';
+
     return { stores: filteredPlaces, reviews: review };
   }
 
