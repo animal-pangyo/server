@@ -21,7 +21,7 @@ export class StoreController {
   constructor(private readonly storeService: StoreService) {}
 
   // [GET] /stores
-  // storeType, page, sort에 따라 해당 유형의 가게 목록을 반환합니다. 사라진 기능 
+  // storeType, page, sort에 따라 해당 유형의 가게 목록을 반환합니다. 사라진 기능
   @Get()
   async getStoresByType(
     @Query('type') storeType: string, // 가게 유형
