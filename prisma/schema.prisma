@@ -65,30 +65,12 @@ model Comment {
   author     User     @relation(fields: [author_id], references: [idx])
 }
 
-model Store {
-  store_id Int      @id @default(autoincrement())
-  store_type    String
-	name       String
-  address    String
-  detail_address String
-  details    String
-  business_hours String
-  contact String
-  latitude String
-  longitude String
-  reviews Review[]
-  likes Like[]
-  created_at DateTime @default(now())
-  address_id String
-}
-
 model Review {
   review_id   Int      @id @default(autoincrement())
   content     String
   title       String
   store_id    Int      
   user_id    String 
-  store     Store     @relation(fields: [store_id], references: [store_id])
   user        User       @relation("ReviewUser", fields: [user_id], references: [user_id], onDelete: Cascade) 
   created_at  DateTime @default(now())
 }
@@ -98,6 +80,5 @@ model Like {
   user_id     Int
   store_id  Int
   user        User     @relation("LikeUser", fields: [user_id], references: [idx] , onDelete: Cascade)
-  store     Store  @relation(fields: [store_id], references: [store_id])
   created_at  DateTime @default(now())
 }

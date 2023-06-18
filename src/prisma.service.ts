@@ -29,10 +29,6 @@ export class PrismaService {
     return this.prisma.review;
   }
 
-  get store() {
-    return this.prisma.store;
-  }
-
   get client() {
     return this.prisma;
   }
