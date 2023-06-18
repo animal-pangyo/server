@@ -51,7 +51,7 @@ export class AppService {
         data: [
           { board_name: '자유게시판', board_type: 'free' },
           { board_name: '공지사항', board_type: 'notice' },
-          { board_name: 'FAQ', board_type: 'FAQ' },
+          { board_name: '일대일문의', board_type: 'inquiry' },
         ],
       });
     }
