@@ -1,84 +1,92 @@
 // This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
+// Prisma 클라이언트를 생성하기 위한 generator 선언
 generator client {
-  provider = "prisma-client-js"
+  provider = "prisma-client-js" // Prisma 클라이언트를 생성할 때 사용할 provider를 지정합니다.
+
 }
 
+// MySQL 데이터베이스를 위한 datasource 선언
 datasource db {
-  provider = "mysql"
-  url      = env("DATABASE_URL")
+  provider = "mysql"  // 데이터베이스에 사용할 provider를 지정
+  url      = env("DATABASE_URL") // DATABASE_URL 환경 변수에서 데이터베이스 연결 URL을 가져옵니다.
 }
 
 
+// "User" 모델 정의
 model User {
-
-  idx               Int       @id @default(autoincrement())
-  user_id           String    @unique  
-  user_name         String   
-  email             String   @unique
-  pwd               String
-  created_at        DateTime  @default(now())
-  updated_at        DateTime
-  roles             String
-  phone             String
-  address1          String
-  address2          String
-  month             String
-  year              String
-  day               String
-  posts             Post[]
-  comments          Comment[]
-  atn               String   @db.Text
-  reviews           Review[] @relation("ReviewUser")
-  likes             Like[]   @relation("LikeUser")
+  idx               Int       @id @default(autoincrement()) // 고유한 식별자인 idx 필드를 정수형으로 선언하고 자동 증가 설정을 합니다.
+  user_id           String    @unique  // 사용자 ID를 문자열로 선언하고 고유성 제약 조건을 설정합니다.
+  user_name         String   // 사용자 이름을 문자열로 선언합니다.
+  email             String   @unique // 이메일을 문자열로 선언하고 고유성 제약 조건을 설정합니다.
+  pwd               String // 비밀번호를 문자열로 선언합니다.
+  created_at        DateTime  @default(now()) // 생성일을 날짜 및 시간으로 선언하고 기본값으로 현재 시간을 설정합니다.
+  updated_at        DateTime // 업데이트된 일자 및 시간을 날짜 및 시간으로 선언합니다.
+  roles             String // 역할을 문자열로 선언합니다.
+  phone             String // 전화번호를 문자열로 선언합니다.
+  address1          String // 주소1을 문자열로 선언합니다.
+  address2          String // 주소2를 문자열로 선언합니다.
+  month             String // 월을 문자열로 선언합니다.
+  year              String // 년을 문자열로 선언합니다.
+  day               String // 일을 문자열로 선언합니다.
+  posts             Post[] // 게시물과의 관계를 나타내기 위한 Post 배열을 선언합니다.
+  comments          Comment[] // 댓글과의 관계를 나타내기 위한 Comment 배열을 선언합니다.
+  atn               String   @db.Text // atn 필드를 문자열로 선언하고 데이터베이스에 대한 특정 설정을 지정합니다.
+  reviews           Review[] @relation("ReviewUser") // 사용자와의 관계를 나타내기 위한 Review 배열을 선언하고 관계 이름을 지정합니다.
+  likes             Like[]   @relation("LikeUser") // 사용자와의 관계를 나타내기 위한 Like 배열을 선언하고 관계 이름을 지정합니다.
 }
 
+// "Post" 모델 정의
 model Post {
-  post_id    Int      @id @default(autoincrement())
-  board_id   Int
-  title      String
-  content    String
-  author_id  String
-  created_at DateTime @default(now())
-	post_pw    String?
-  board      Board    @relation(fields: [board_id], references: [board_id])
-  author     User     @relation(fields: [author_id], references: [user_id], onDelete: Cascade)
-  comments   Comment[]
+  post_id    Int      @id @default(autoincrement()) // 고유한 식별자인 post_id 필드를 정수형으로 선언하고 자동 증가 설정을 합니다.
+  board_id   Int // board_id를 정수형으로 선언합니다.
+  title      String // 제목을 문자열로 선언합니다.
+  content    String // 내용을 문자열로 선언합니다.
+  author_id  String // 작성자 ID를 문자열로 선언합니다.
+  created_at DateTime @default(now()) // 생성일을 날짜 및 시간으로 선언하고 기본값으로 현재 시간을 설정합니다.
+  post_pw    String? // 게시물 비밀번호를 문자열로 선언합니다. (선택적 필드)
+  board      Board    @relation(fields: [board_id], references: [board_id]) // board와의 관계를 나타내기 위한 Board 타입의 필드를 선언하고 관계 설정을 합니다.
+  author     User     @relation(fields: [author_id], references: [user_id], onDelete: Cascade) // author와의 관계를 나타내기 위한 User 타입의 필드를 선언하고 관계 설정을 합니다.
+  comments   Comment[] // 댓글과의 관계를 나타내기 위한 Comment 배열을 선언합니다.
 }
 
+// "Board" 모델 정의
 model Board {
-  board_id   Int      @id @default(autoincrement())
-  board_name String
-  board_type String
-  created_at DateTime @default(now())
-  posts             Post[]
+  board_id   Int      @id @default(autoincrement()) // 고유한 식별자인 board_id 필드를 정수형으로 선언하고 자동 증가 설정을 합니다.
+  board_name String // 게시판 이름을 문자열로 선언합니다.
+  board_type String // 게시판 유형을 문자열로 선언합니다.
+  created_at DateTime @default(now()) // 생성일을 날짜 및 시간으로 선언하고 기본값으로 현재 시간을 설정합니다.
+  posts             Post[] // 게시물과의 관계를 나타내기 위한 Post 배열을 선언합니다.
 }
 
+// "Comment" 모델 정의
 model Comment {
-  comment_id Int      @id @default(autoincrement())
-  post_id    Int
-  content    String
-  author_id  Int
-  created_at DateTime @default(now())
-  post       Post     @relation(fields: [post_id], references: [post_id])
-  author     User     @relation(fields: [author_id], references: [idx])
+  comment_id Int      @id @default(autoincrement()) // 고유한 식별자인 comment_id 필드를 정수형으로 선언하고 자동 증가 설정을 합니다.
+  post_id    Int // 게시물 ID를 정수형으로 선언합니다.
+  content    String // 내용을 문자열로 선언합니다.
+  author_id  Int // 작성자 ID를 정수형으로 선언합니다.
+  created_at DateTime @default(now()) // 생성일을 날짜 및 시간으로 선언하고 기본값으로 현재 시간을 설정합니다.
+  post       Post     @relation(fields: [post_id], references: [post_id]) // post와의 관계를 나타내기 위한 Post 타입의 필드를 선언하고 관계 설정을 합니다.
+  author     User     @relation(fields: [author_id], references: [idx]) // author와의 관계를 나타내기 위한 User 타입의 필드를 선언하고 관계 설정을 합니다.
 }
 
+// "Review" 모델 정의
 model Review {
-  review_id   Int      @id @default(autoincrement())
-  content     String
-  title       String
-  store_id    Int      
-  user_id    String 
-  user        User       @relation("ReviewUser", fields: [user_id], references: [user_id], onDelete: Cascade) 
-  created_at  DateTime @default(now())
+  review_id   Int      @id @default(autoincrement()) // 고유한 식별자인 review_id 필드를 정수형으로 선언하고 자동 증가 설정을 합니다.
+  content     String // 내용을 문자열로 선언합니다.
+  title       String // 제목을 문자열로 선언합니다.
+  store_id    Int // 가게 ID를 정수형으로 선언합니다.
+  user_id    String // 사용자 ID를 문자열로 선언합니다.
+  user        User       @relation("ReviewUser", fields: [user_id], references: [user_id], onDelete: Cascade) // user와의 관계를 나타내기 위한 User 타입의 필드를 선언하고 관계 설정을 합니다.
+  created_at  DateTime @default(now()) // 생성일을 날짜 및 시간으로 선언하고 기본값으로 현재 시간을 설정합니다.
 }
 
+// "Like" 모델 정의
 model Like {
-  Like_id     Int      @id @default(autoincrement())
-  user_id     Int
-  store_id  Int
-  user        User     @relation("LikeUser", fields: [user_id], references: [idx] , onDelete: Cascade)
-  created_at  DateTime @default(now())
+  Like_id     Int      @id @default(autoincrement()) // 고유한 식별자인 Like_id 필드를 정수형으로 선언하고 자동 증가 설정을 합니다.
+  user_id     Int // 사용자 ID를 정수형으로 선언합니다.
+  store_id  Int // 가게 ID를 정수형으로 선언합니다.
+  user        User     @relation("LikeUser", fields: [user_id], references: [idx] , onDelete: Cascade) // user와의 관계를 나타내기 위한 User 타입의 필드를 선언하고 관계 설정을 합니다.
+  created_at  DateTime @default(now()) // 생성일을 날짜 및 시간으로 선언하고 기본값으로 현재 시간을 설정합니다.
 }

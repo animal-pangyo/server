@@ -65,69 +65,6 @@ export class StoreService {
     return { stores: filteredPlaces[0], reviews: review };
   }
 
-  async getStoresByType(
-    storeType: string,
-    page: number,
-    sort: string,
-  ): Promise<{ stores: Store[]; totalCount: number }> {
-    const limit = 10;
-    const skip = (page - 1) * limit;
-
-    let orderBy = {};
-
-    if (sort === 'newest') {
-      orderBy = {
-        reviews: {
-          count: 'desc',
-        },
-        //created_at: 'desc',
-      };
-    } else if (sort === 'popular') {
-      orderBy = {
-        likes: {
-          _count: 'desc',
-        },
-      };
-    } else if (sort === 'reviews') {
-      orderBy = {
-        reviews: {
-          _count: 'desc',
-        },
-      };
-    } else {
-      orderBy = {
-        reviews: {
-          _count: 'desc',
-        },
-        //created_at: 'desc',
-      };
-    }
-
-    const [stores, totalCount] = await Promise.all([
-      this.prismaService.store.findMany({
-        where: {
-          store_type: storeType,
-        },
-        include: {
-          reviews: true,
-          likes: true,
-        },
-        skip,
-        orderBy,
-      }),
-      this.prismaService.store.count({
-        where: {
-          store_type: storeType,
-        },
-      }),
-    ]);
-    console.log(stores, totalCount, 'store service');
-    return {
-      stores,
-      totalCount,
-    };
-  }
-
   async createStore(createStoreDto: CreateStoreDto): Promise<any> {
     const {
       store_type,
@@ -183,40 +120,15 @@ export class StoreService {
     }
   }
 
-  //updateStore
-  async updateStore(id: number, updateStoreDto: UpdateStoreDto): Promise<any> {
-    const { name, address, details, business_hours, contact } = updateStoreDto;
-    console.log('update', updateStoreDto);
-    const existingStore = await this.prismaService.store.findUnique({
-      where: { store_id: Number(id) },
-    });
 
-    if (!existingStore) {
-      throw new NotFoundException('업체를 찾을 수 없습니다.');
-    }
-
-    const updatedStore = await this.prismaService.store.update({
-      where: { store_id: Number(id) },
-      data: {
-        name: name || existingStore.name,
-        address: address || existingStore.address,
-        detail_address: detail_address || existingStore.detail_address,
-        details: details || existingStore.details,
-        business_hours: business_hours || existingStore.business_hours,
-        contact: contact || existingStore.contact,
-      },
-    });
-
-    return updatedStore;
-  }
-
+  //새로운 리뷰를 생성합니다.
   async createReview(
     storeId: number,
-    createReviewDto: CreateReviewDto,
+    createReviewDto: CreateReviewDto, // 생성할 리뷰 데이터
   ): Promise<any> {
     console.log(createReviewDto);
     const { title, content, user_id } = createReviewDto;
-
+     // 리뷰를 생성하고, PrismaService를 사용하여 데이터베이스에 저장합니다.
     return this.prismaService.review.create({
       data: {
         title: createReviewDto.title,
@@ -227,42 +139,48 @@ export class StoreService {
     });
   }
 
+  // 특정 상점의 리뷰 목록을 가져오는 메서드
   async getStoreReview(storeId) {
+    // 주어진 storeId에 해당하는 리뷰들을 찾습니다.
     const review = await this.prismaService.review.findMany({
       where: { store_id: Number(storeId) },
     });
-
+     // 리뷰가 없을 경우 NotFoundException을 throw합니다.
     if (!review) {
+        // 찾은 리뷰들을 반환합니다.
       throw new NotFoundException('리뷰가 존재하지 않습니다.');
     }
     return review;
   }
 
+// 특정 리뷰의 상세 정보를 가져오는 메서드
   async getReviewDetail(reviewId: number): Promise<Review> {
+     // 주어진 reviewId에 해당하는 리뷰를 찾습니다.
     const review = await this.prismaService.review.findUnique({
       where: { review_id: Number(reviewId) },
     });
-
+     // 리뷰가 없을 경우 NotFoundException을 throw합니다.
     if (!review) {
       throw new NotFoundException('리뷰가 존재하지 않습니다.');
     }
-
+     // 찾은 리뷰를 반환합니다.
     return review;
   }
 
+  // 특정 리뷰를 업데이트하는 메서드
   async updateReview(
     reviewId: number,
     createReviewDto: CreateReviewDto,
   ): Promise<any> {
-    console.log(createReviewDto);
+     // 주어진 reviewId에 해당하는 리뷰를 찾습니다.
     const existingReview = await this.prismaService.review.findUnique({
       where: { review_id: Number(reviewId) },
     });
-    console.log(existingReview);
+      // 찾은 리뷰가 없을 경우 NotFoundException을 throw합니다.
     if (!existingReview) {
       throw new NotFoundException('리뷰를 찾을 수 없습니다.');
     }
-
+      // 리뷰를 업데이트합니다.
     const updatedReview = await this.prismaService.review.update({
       where: { review_id: Number(reviewId) },
       data: {
@@ -270,7 +188,7 @@ export class StoreService {
         title: createReviewDto.title,
       },
     });
-
+    // 업데이트가 성공적으로 이루어졌음을 나타내는 메시지와 업데이트된 리뷰를 반환합니다.
     return { message: '성공적으로 수정되었습니다', updatedReview };
   }
 
@@ -334,19 +252,22 @@ export class StoreService {
     throw new NotFoundException('해당하는 업체를 찾을 수 없습니다.');
   }
 
+  // 특정 id에 해당하는 업체를 삭제하는 메서드
   async deleteStore(id: number): Promise<any> {
+     // 주어진 id에 해당하는 업체를 찾습니다.
     const existingStore = await this.prismaService.store.findUnique({
       where: { store_id: Number(id) },
     });
 
+  // 찾은 업체가 없을 경우 NotFoundException을 throw합니다.
     if (!existingStore) {
       throw new NotFoundException('업체를 찾을 수 없습니다.');
     }
-
+      // 찾은 업체를 삭제합니다.
     await this.prismaService.store.delete({
       where: { store_id: Number(id) },
     });
-
+     // 삭제가 완료되었음을 나타내는 메시지를 반환합니다.
     return { message: '업체가 삭제되었습니다.' };
   }
 }
