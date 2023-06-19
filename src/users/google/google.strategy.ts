@@ -1,7 +1,7 @@
 import { PassportStrategy } from '@nestjs/passport';
 import { Strategy, VerifyCallback } from 'passport-google-oauth20';
 import { Injectable } from '@nestjs/common';
-]
+
 // Google OAuth를 사용하여 사용자 인증을 처리하는 GoogleStrategy
 @Injectable()
 export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
