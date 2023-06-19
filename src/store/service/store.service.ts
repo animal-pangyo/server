@@ -18,19 +18,6 @@ export class StoreService {
     // 상점의 세부 정보를 가져오는 기능을 수행
     // storeId와 storeName을 매개변수로 받고, 선택적으로 userId를 받음
 
-    if (userId) {
-      // userId가 주어진 경우,
-      // prismaService.user.findUnique를 사용하여 해당 사용자의 idx 값을 가져옴
-      userKey = await this.prismaService.user.findUnique({
-        where: {
-          user_id: userId,
-        },
-        select: {
-          idx: true,
-        },
-      });
-    }
-
     const url = `https://dapi.kakao.com/v2/local/search/keyword.json`;
     // 카카오 API를 호출하기 위한 URL 주소
 
@@ -59,26 +46,44 @@ export class StoreService {
       throw new NotFoundException('해당 업체의 정보를 찾을 수 없습니다.');
       // NotFoundException을 throw
     }
+    let userKey
+    if (userId !== 'undefined') {
+      // userId가 주어진 경우,
+      // prismaService.user.findUnique를 사용하여 해당 사용자의 idx 값을 가져옴
+       userKey = await this.prismaService.user.findUnique({
+        where: {
+          user_id: userId,
+        },
+        select: {
+          idx: true,
+        },
+      });
+
+      const existingLike = await this.prismaService.like.findFirst({
+        // prismaService.review.findMany를 사용하여 해당 상점의 리뷰들을 가져옴
+        where: {
+          user_id: userKey.idx,
+          store_id: Number(storeId),
+        },
+      });
+      if (existingLike) {
+        // 사용자와 상점의 idx가 일치하는 like가 있는지 확인
+        filteredPlaces[0].like = true;
+        // existingLike가 존재하는 경우, filteredPlaces[0].like를 true로 설정
+      } else {
+        filteredPlaces[0].like = false;
+        // 그렇지 않은 경우, filteredPlaces[0].like를 false로 설정
+      }
+      
+    }
+
+
 
     const review = await this.prismaService.review.findMany({
       where: { store_id: Number(storeId) },
     });
 
-    const existingLike = await this.prismaService.like.findFirst({
-      // prismaService.review.findMany를 사용하여 해당 상점의 리뷰들을 가져옴
-      where: {
-        user_id: userKey.idx,
-        store_id: Number(storeId),
-      },
-    });
-    if (existingLike) {
-      // 사용자와 상점의 idx가 일치하는 like가 있는지 확인
-      filteredPlaces[0].like = true;
-      // existingLike가 존재하는 경우, filteredPlaces[0].like를 true로 설정
-    } else {
-      filteredPlaces[0].like = false;
-      // 그렇지 않은 경우, filteredPlaces[0].like를 false로 설정
-    }
+
 
     filteredPlaces[0].time = '9시-6시';
     // filteredPlaces[0].time에 임의의 값을 설정
