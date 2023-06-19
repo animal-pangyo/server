@@ -47,7 +47,7 @@ export class StoreService {
       // NotFoundException을 throw
     }
     let userKey
-    if (userId !== undefined) {
+    if (userId) {
       // userId가 주어진 경우,
       // prismaService.user.findUnique를 사용하여 해당 사용자의 idx 값을 가져옴
       userKey = await this.prismaService.user.findUnique({
@@ -272,7 +272,7 @@ export class StoreService {
 
     const { userId, storeId, isLike } = createLikeDto;
     // createLikeDto에서 userId, storeId, isLike를 추출하여 변수로 할당
-
+    console.log(userId);
     const userKey = await this.prismaService.user.findFirst({
       where: {
         user_id: userId,
@@ -284,6 +284,7 @@ export class StoreService {
     // prismaService.user.findFirst를 사용
     // 주어진 userId에 해당하는 사용자의 idx를 검색
 
+    console.log(userKey.idx);
     const existingLike = await this.prismaService.like.findFirst({
       where: {
         user_id: userKey.idx,
