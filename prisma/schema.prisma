@@ -67,7 +67,7 @@ model Comment {
   content    String // 내용을 문자열로 선언합니다.
   author_id  Int // 작성자 ID를 정수형으로 선언합니다.
   created_at DateTime @default(now()) // 생성일을 날짜 및 시간으로 선언하고 기본값으로 현재 시간을 설정합니다.
-  post       Post     @relation(fields: [post_id], references: [post_id]) // post와의 관계를 나타내기 위한 Post 타입의 필드를 선언하고 관계 설정을 합니다.
+  post       Post     @relation(fields: [post_id], references: [post_id], onDelete: Cascade) // post와의 관계를 나타내기 위한 Post 타입의 필드를 선언하고 관계 설정을 합니다.
   author     User     @relation(fields: [author_id], references: [idx]) // author와의 관계를 나타내기 위한 User 타입의 필드를 선언하고 관계 설정을 합니다.
 }
 
