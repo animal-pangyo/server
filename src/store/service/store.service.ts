@@ -10,7 +10,7 @@ import axios from 'axios';
 
 @Injectable()
 export class StoreService {
-  constructor(private readonly prismaService: PrismaService) { }
+  constructor(private readonly prismaService: PrismaService) {}
   // PrismaService를 주입받는 생성자 가짐
   // PrismaService를 사용하여 데이터베이스 액세스를 관리
 
@@ -46,7 +46,7 @@ export class StoreService {
       throw new NotFoundException('해당 업체의 정보를 찾을 수 없습니다.');
       // NotFoundException을 throw
     }
-    let userKey
+    let userKey;
     if (userId) {
       // userId가 주어진 경우,
       // prismaService.user.findUnique를 사용하여 해당 사용자의 idx 값을 가져옴
@@ -74,16 +74,11 @@ export class StoreService {
         filteredPlaces[0].like = false;
         // 그렇지 않은 경우, filteredPlaces[0].like를 false로 설정
       }
-
     }
-
-
 
     const review = await this.prismaService.review.findMany({
       where: { store_id: Number(storeId) },
     });
-
-
 
     filteredPlaces[0].time = '9시-6시';
     // filteredPlaces[0].time에 임의의 값을 설정

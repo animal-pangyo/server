@@ -69,7 +69,7 @@ export class GoogleController {
     }
     return res.redirect(
       // 클라이언트로 리다이렉트
-      `http://${process.env.CLIENT_REDIRECT}/login/callback?token=${newToken}&email=${user.email}`,
+      `https://${process.env.CLIENT_REDIRECT}/login/callback?token=${newToken}&email=${user.email}`,
       // 새로운 토큰과 사용자 이메일을 쿼리 매개변수로 전달
     );
   }
