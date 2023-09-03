@@ -14,6 +14,9 @@ import { HashService } from './users/user/hash.service';
 import { PrismaService } from './prisma.service';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
+import { ChatGateway } from './chat/websocket/chat.gateway';
+import { ChatModule } from './chat/chat.module';
+import { ChatService } from './chat/chat.service';
 
 @Module({
   // 데코레이터를 사용하여 해당 클래스를 모듈로 지정
@@ -26,12 +29,20 @@ import { join } from 'path';
     CommentModule,
     AdminModule,
     StoreModule,
+    ChatModule,
     ServeStaticModule.forRoot({
       rootPath: join(__dirname, '..', 'client/dist'),
     }),
   ],
   controllers: [AppController], // 해당 모듈에서 사용될 컨트롤러들을 지정
-  providers: [AppService, GoogleStrategy, HashService, PrismaService], // 해당 모듈에서 사용될 프로바이더들을 지정
+  providers: [
+    AppService,
+    GoogleStrategy,
+    HashService,
+    PrismaService,
+    ChatGateway,
+    ChatService,
+  ], // 해당 모듈에서 사용될 프로바이더들을 지정
   // 프로바이더 : 의존성 주입을 통해서 다른 클래스나 값들을 제공
 })
 export class AppModule implements NestModule {

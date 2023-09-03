@@ -40,4 +40,20 @@ export class PrismaService {
   get user() {
     return this.prisma.user;
   }
+
+  get block() {
+    return this.prisma.block;
+  }
+
+  get chatRoom() {
+    return this.prisma.chatRoom;
+  }
+
+  get chatMsg() {
+    return this.prisma.chatMsg;
+  }
+
+  get resource() {
+    return this.prisma.resource;
+  }
 }
