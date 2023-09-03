@@ -3,6 +3,7 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { LoggerMiddleware } from './middlewares/logger.middleware';
 import { BoardModule } from './board/board.module';
+import { ImageModule } from './image/image.module';
 import { PostModule } from './post/post.module';
 import { CommentModule } from './comment/comment.module';
 import { GoogleStrategy } from './users/google/google.strategy';
@@ -30,6 +31,7 @@ import { ChatService } from './chat/chat.service';
     AdminModule,
     StoreModule,
     ChatModule,
+    ImageModule,
     ServeStaticModule.forRoot({
       rootPath: join(__dirname, '..', 'client/dist'),
     }),
