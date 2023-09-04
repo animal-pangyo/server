@@ -121,10 +121,10 @@ model ChatMsg {
   author     User      @relation("MsgAuthorUser", fields: [author_id], references: [user_id])
   author_id  String
   msg        String
-  img        Int
+  img        Int?
   chatroom   ChatRoom  @relation("ChatRoom", fields: [chatroom_id], references: [idx])
   chatroom_id Int
-  isRead      Boolean   // 읽음 표시를 나타내는 불리언 필드 추가
+  isRead      String  
   created_at DateTime  @default(now())
 }
 

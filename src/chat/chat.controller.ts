@@ -36,19 +36,19 @@ export class ChatController {
 
   // 차단 또는 차단 해제
   @Patch('/user/block')
-  async blockUser(@Req() request) {
+  async blockUser(@Body() request) {
     return this.chatService.blockUser(request);
   }
 
   // 차단 조회
   @Post('/user/isBlock')
-  async isBlock(@Req() request) {
+  async isBlock(@Body() request) {
     return this.chatService.isBlock(request);
   }
 
   // 대화 내용 가져오기
   @Post('/chat')
-  async saveChatMsg(@Req() request) {
+  async saveChatMsg(@Body() request) {
     return this.chatService.getChatMsg(request);
   }
 

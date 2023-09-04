@@ -15,9 +15,9 @@ import { HashService } from './users/user/hash.service';
 import { PrismaService } from './prisma.service';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
-import { ChatGateway } from './chat/websocket/chat.gateway';
 import { ChatModule } from './chat/chat.module';
 import { ChatService } from './chat/chat.service';
+import { ChatGateway } from './chat/websocket/chat.gateway';
 
 @Module({
   // 데코레이터를 사용하여 해당 클래스를 모듈로 지정
@@ -42,8 +42,8 @@ import { ChatService } from './chat/chat.service';
     GoogleStrategy,
     HashService,
     PrismaService,
-    ChatGateway,
     ChatService,
+    ChatGateway,
   ], // 해당 모듈에서 사용될 프로바이더들을 지정
   // 프로바이더 : 의존성 주입을 통해서 다른 클래스나 값들을 제공
 })

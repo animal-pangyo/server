@@ -69,22 +69,47 @@ export class ChatService {
         block_user: request.blockId,
       },
     });
+
     return existBlock;
   }
 
   async getChatMsg(request) {
-    const chatRoomId = await this.prisma.chatRoom.findUnique({
+    console.log(request);
+    const chatRoomId = await this.prisma.chatRoom.findMany({
       where: {
         user_id1: request.userid,
         user_id2: request.target,
       },
     });
+
     const chatMsg = await this.prisma.chatMsg.findMany({
       where: {
         chatroom_id: chatRoomId.idx,
       },
     });
-    return chatMsg;
+
+    const formattedChatMsg = chatMsg.map((message) => {
+      const { created_at, ...rest } = message;
+      return {
+        ...rest,
+        createdAt: created_at.toLocaleString('en-US', {
+          year: 'numeric',
+          month: '2-digit',
+          day: '2-digit',
+          hour: '2-digit',
+          minute: '2-digit',
+        }),
+      };
+    });
+
+    return {
+      list: formattedChatMsg,
+      users: {
+        target: request.target,
+        user: request.userid,
+      },
+      chatidx: chatRoomId,
+    };
   }
 
   async createChatMsg(createChatMsg: createChatMsg) {
@@ -123,7 +148,6 @@ export class ChatService {
         },
       });
     } else {
-      console.log('3333333333333333333333333333333333333');
       return this.prisma.chatMsg.create({
         data: {
           msg: createChatMsg.msg,
