@@ -52,8 +52,6 @@ export class ChatGateway
 
   handleConnection(client: Socket): void {
     console.log('웹소켓 연결');
-
-    this.connectedClients[client.id] = true;
   }
 
   handleDisconnect(client: Socket): void {

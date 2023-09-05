@@ -27,10 +27,51 @@ export class ChatService {
   async getChatRoomList(user_id) {
     const rooms = await this.prisma.chatRoom.findMany({
       where: {
-        user_id1: user_id,
+        OR: [
+          {
+            user_id1: user_id,
+          },
+          {
+            user_id2: user_id,
+          },
+        ],
       },
     });
-    return { list: rooms };
+
+    const formattedChatRoomList = rooms.map(async (room) => {
+      let userId;
+      if (room.user_id1 === user_id) {
+        userId = room.user_id2;
+        room.user_id = userId;
+      } else {
+        userId = room.user_id1;
+        room.user_id = userId;
+      }
+
+      const content = await this.prisma.chatMsg.findFirst({
+        where: {
+          chatroom_id: room.idx,
+        },
+      });
+
+      const { created_at, idx } = room;
+      return {
+        date: created_at.toLocaleString('en-US', {
+          year: 'numeric',
+          month: '2-digit',
+          day: '2-digit',
+          hour: '2-digit',
+          minute: '2-digit',
+        }),
+        userId,
+        content: content.msg,
+        chatId: idx,
+      };
+    });
+
+    const chatRoomList = await Promise.all(formattedChatRoomList);
+
+    return { data: chatRoomList };
   }
 
   async getUserBlockList(user_id) {
@@ -39,6 +80,8 @@ export class ChatService {
         user_id: user_id,
       },
     });
+
+    console.log(blockList);
     return { blockList: blockList };
   }
 
@@ -63,6 +106,7 @@ export class ChatService {
   }
 
   async isBlock(request) {
+    console.log(request);
     const existBlock = await this.prisma.block.findMany({
       where: {
         user_id: request.id,
@@ -70,49 +114,81 @@ export class ChatService {
       },
     });
 
-    return existBlock;
+    if (existBlock > 0) {
+      return false;
+    } else {
+      return true;
+    }
   }
 
   async getChatMsg(request) {
-    console.log(request);
-    const chatRoomId = await this.prisma.chatRoom.findMany({
+    const chatRoom = await this.prisma.chatRoom.findMany({
       where: {
-        user_id1: request.userid,
-        user_id2: request.target,
+        OR: [
+          {
+            user_id1: request.userid,
+            user_id2: request.target,
+          },
+          {
+            user_id1: request.target,
+            user_id2: request.userid,
+          },
+        ],
       },
     });
 
-    const chatMsg = await this.prisma.chatMsg.findMany({
-      where: {
-        chatroom_id: chatRoomId.idx,
-      },
-    });
+    if (chatRoom.length > 0) {
+      const chatRoomIdx = chatRoom[0].idx;
 
-    const formattedChatMsg = chatMsg.map((message) => {
-      const { created_at, ...rest } = message;
+      const chatMsg = await this.prisma.chatMsg.findMany({
+        where: {
+          chatroom_id: chatRoomIdx,
+        },
+      });
+
+      const formattedChatMsg = chatMsg.map((message) => {
+        const { created_at, ...rest } = message;
+        return {
+          ...rest,
+          createdAt: created_at.toLocaleString('en-US', {
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+            hour: '2-digit',
+            minute: '2-digit',
+          }),
+        };
+      });
+
       return {
-        ...rest,
-        createdAt: created_at.toLocaleString('en-US', {
-          year: 'numeric',
-          month: '2-digit',
-          day: '2-digit',
-          hour: '2-digit',
-          minute: '2-digit',
-        }),
+        list: formattedChatMsg,
+        users: {
+          target: request.target,
+          user: request.userid,
+        },
+        chatidx: chatRoomIdx,
       };
-    });
-
-    return {
-      list: formattedChatMsg,
-      users: {
-        target: request.target,
-        user: request.userid,
-      },
-      chatidx: chatRoomId,
-    };
+    }
   }
 
   async createChatMsg(createChatMsg: createChatMsg) {
+    console.log('createChatMsg : ', createChatMsg);
+
+    const chatRoom = await this.prisma.chatRoom.findMany({
+      where: {
+        OR: [
+          {
+            user_id1: createChatMsg.id,
+            user_id2: createChatMsg.target,
+          },
+          {
+            user_id1: createChatMsg.target,
+            user_id2: createChatMsg.id,
+          },
+        ],
+      },
+    });
+
     const existChatRoom = await this.prisma.chatRoom.findMany({
       where: {
         idx: createChatMsg.chatroom_id,

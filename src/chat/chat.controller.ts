@@ -23,13 +23,13 @@ export class ChatController {
   }
 
   // 채팅방 리스트 가져오기
-  @Get('/user/:user_id/chat')
+  @Get('/user/chat/:user_id')
   async getChatRoomList(@Param('user_id') user_id: string) {
     return this.chatService.getChatRoomList(user_id);
   }
 
   // 차단 리스트 조회
-  @Get('/block/user/:user_id')
+  @Get('/user/block/:user_id')
   async getUserBlockList(@Param('user_id') user_id: string) {
     return this.chatService.getUserBlockList(user_id);
   }
