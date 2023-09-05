@@ -99,10 +99,11 @@ model Like {
 model Block {
   idx       Int       @id @default(autoincrement())
   user      User      @relation("BlockUser", fields: [user_id], references: [user_id])
-  user_id   String
+  user_id   String  
   blocked   User      @relation("BlockedUser", fields: [block_user], references: [user_id])
-  block_user String
+  block_user String   
   created_at DateTime @default(now())
+  @@unique([user_id, block_user])
 }
 
 model ChatRoom {

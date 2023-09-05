@@ -16,9 +16,9 @@ export class ChatController {
   constructor(private chatService: ChatService) {}
 
   // 채팅방 나가기 (삭제)
-  @Delete('/chat')
-  async deleteChatRoom(@Req() request) {
-    const chatRoomId = request.id;
+  @Delete('/chat/:chatRoomIdx')
+  async deleteChatRoom(@Param('chatRoomIdx') chatRoomIdx: number) {
+    const chatRoomId = chatRoomIdx;
     return this.chatService.deleteChatRoom(chatRoomId);
   }
 

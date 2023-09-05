@@ -19,7 +19,7 @@ export class ChatService {
   async deleteChatRoom(chatRoomIdx) {
     await this.prisma.chatRoom.delete({
       where: {
-        idx: chatRoomIdx,
+        idx: Number(chatRoomIdx),
       },
     });
   }
@@ -80,13 +80,11 @@ export class ChatService {
         user_id: user_id,
       },
     });
-
-    console.log(blockList);
     return { blockList: blockList };
   }
 
   async blockUser(request) {
-    const existBlock = this.isBlock(request);
+    const existBlock = await this.isBlock(request);
 
     if (!existBlock) {
       await this.prisma.block.create({
@@ -98,31 +96,30 @@ export class ChatService {
     } else {
       await this.prisma.block.delete({
         where: {
-          user_id: request.id,
-          block_user: request.blockId,
+          user_id_block_user: {
+            user_id: request.id,
+            block_user: request.blockId,
+          },
         },
       });
     }
   }
 
   async isBlock(request) {
-    console.log(request);
-    const existBlock = await this.prisma.block.findMany({
+    const existBlock = await this.prisma.block.findFirst({
       where: {
         user_id: request.id,
         block_user: request.blockId,
       },
     });
 
-    if (existBlock > 0) {
-      return false;
-    } else {
-      return true;
-    }
+    return existBlock !== null;
   }
 
   async getChatMsg(request) {
-    const chatRoom = await this.prisma.chatRoom.findMany({
+    console.log(request);
+
+    let chatRoom = await this.prisma.chatRoom.findMany({
       where: {
         OR: [
           {
@@ -137,38 +134,45 @@ export class ChatService {
       },
     });
 
-    if (chatRoom.length > 0) {
-      const chatRoomIdx = chatRoom[0].idx;
-
-      const chatMsg = await this.prisma.chatMsg.findMany({
-        where: {
-          chatroom_id: chatRoomIdx,
+    if (chatRoom.length === 0) {
+      chatRoom = await this.prisma.chatRoom.create({
+        data: {
+          user_id1: request.userid,
+          user_id2: request.target,
         },
       });
-
-      const formattedChatMsg = chatMsg.map((message) => {
-        const { created_at, ...rest } = message;
-        return {
-          ...rest,
-          createdAt: created_at.toLocaleString('en-US', {
-            year: 'numeric',
-            month: '2-digit',
-            day: '2-digit',
-            hour: '2-digit',
-            minute: '2-digit',
-          }),
-        };
-      });
-
-      return {
-        list: formattedChatMsg,
-        users: {
-          target: request.target,
-          user: request.userid,
-        },
-        chatidx: chatRoomIdx,
-      };
     }
+
+    const chatRoomIdx = chatRoom[0].idx;
+
+    const chatMsg = await this.prisma.chatMsg.findMany({
+      where: {
+        chatroom_id: chatRoomIdx,
+      },
+    });
+
+    const formattedChatMsg = chatMsg.map((message) => {
+      const { created_at, ...rest } = message;
+      return {
+        ...rest,
+        createdAt: created_at.toLocaleString('en-US', {
+          year: 'numeric',
+          month: '2-digit',
+          day: '2-digit',
+          hour: '2-digit',
+          minute: '2-digit',
+        }),
+      };
+    });
+
+    return {
+      list: formattedChatMsg,
+      users: {
+        target: request.target,
+        user: request.userid,
+      },
+      chatidx: chatRoomIdx,
+    };
   }
 
   async createChatMsg(createChatMsg: createChatMsg) {
