@@ -176,8 +176,6 @@ export class ChatService {
   }
 
   async createChatMsg(createChatMsg: createChatMsg) {
-    console.log('createChatMsg : ', createChatMsg);
-
     const chatRoom = await this.prisma.chatRoom.findMany({
       where: {
         OR: [
@@ -202,39 +200,42 @@ export class ChatService {
     if (existChatRoom.length === 0) {
       this.prisma.chatRoom.create({
         data: {
-          user_id1: createChatMsg.author_id,
+          user_id1: createChatMsg.id,
           user_id2: createChatMsg.target,
         },
       });
 
       const chatRoomId = await this.prisma.chatRoom.findFirst({
         where: {
-          user_id1: createChatMsg.author_id,
+          user_id1: createChatMsg.id,
           user_id2: createChatMsg.target,
         },
       });
 
+      console.log(existChatRoom);
       createChatMsg.chatroom_id = chatRoomId;
+      console.log(createChatMsg.chatroom_id);
     }
 
+    const chatRoomIdx = existChatRoom.at(0).idx;
     if (createChatMsg.img) {
       return this.prisma.chatMsg.create({
         data: {
-          msg: createChatMsg.msg,
+          msg: createChatMsg.text,
           img: createChatMsg.img,
-          isRead: Boolean(createChatMsg.isRead),
-          author_id: createChatMsg.author_id,
-          chatroom_id: createChatMsg.chatroom_id,
+          isRead: false,
+          author_id: createChatMsg.id,
+          chatroom_id: chatRoomIdx,
         },
       });
     } else {
       return this.prisma.chatMsg.create({
         data: {
-          msg: createChatMsg.msg,
-          img: 0,
-          isRead: Boolean(createChatMsg.isRead),
-          author_id: String(createChatMsg.author_id),
-          chatroom_id: createChatMsg.chatroom_id,
+          msg: createChatMsg.text,
+          isRead: 'Y',
+          img: null,
+          author_id: createChatMsg.id,
+          chatroom_id: chatRoomIdx,
         },
       });
     }
@@ -249,5 +250,20 @@ export class ChatService {
         created_at: 'asc',
       },
     });
+  }
+
+  async getUnreadMessageCount(userId: string): Promise<number> {
+    const unreadMessageCount = await this.prisma.chatMsg.count({
+      where: {
+        receiverId: userId,
+        isRead: false,
+      },
+    });
+
+    return unreadMessageCount;
+  }
+
+  async getRecentlyMsg(userId: string) {
+    const recentMessages = await this.prisma.chatMsg.findFirst({});
   }
 }

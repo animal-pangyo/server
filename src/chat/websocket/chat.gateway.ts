@@ -21,7 +21,7 @@ export class ChatGateway
   @WebSocketServer()
   server: Server;
 
-  connectedClients: { [socketId: string]: boolean } = {};
+  connectedClients: Map<string, Socket> = new Map();
 
   @SubscribeMessage('test')
   handleTest(@MessageBody() data: string) {
@@ -35,6 +35,9 @@ export class ChatGateway
   ): Promise<void> {
     console.log('메세지 전송 : ', createChatMsg);
     const savedMsg = await this.chatService.createChatMsg(createChatMsg);
+
+    // this.connectedClients[createChatMsg.id].to()
+
     this.server
       .to(`chatroom-${createChatMsg.chatroom_id}`)
       .emit('newMsg', savedMsg);
@@ -46,12 +49,14 @@ export class ChatGateway
     data: { message: string; room: string },
   ): void {}
 
-  afterInit(server: Server): any {
+  afterInit(server: Socket): any {
     console.log('웹소켓 시작');
   }
 
   handleConnection(client: Socket): void {
+    this.connectedClients[client.id] = client;
     console.log('웹소켓 연결');
+    console.log(client);
   }
 
   handleDisconnect(client: Socket): void {
