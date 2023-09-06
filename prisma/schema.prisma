@@ -98,9 +98,9 @@ model Like {
 
 model Block {
   idx       Int       @id @default(autoincrement())
-  user      User      @relation("BlockUser", fields: [user_id], references: [user_id])
+  user      User      @relation("BlockUser", fields: [user_id], references: [user_id], onDelete: Cascade)
   user_id   String  
-  blocked   User      @relation("BlockedUser", fields: [block_user], references: [user_id])
+  blocked   User      @relation("BlockedUser", fields: [block_user], references: [user_id], onDelete: Cascade)
   block_user String   
   created_at DateTime @default(now())
   @@unique([user_id, block_user])
@@ -108,9 +108,9 @@ model Block {
 
 model ChatRoom {
   idx       Int       @id @default(autoincrement())
-  user1     User      @relation("User1ChatRoom", fields: [user_id1], references: [user_id])
+  user1     User      @relation("User1ChatRoom", fields: [user_id1], references: [user_id], onDelete: Cascade)
   user_id1  String
-  user2     User      @relation("User2ChatRoom", fields: [user_id2], references: [user_id])
+  user2     User      @relation("User2ChatRoom", fields: [user_id2], references: [user_id], onDelete: Cascade)
   user_id2  String
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
@@ -119,11 +119,11 @@ model ChatRoom {
 
 model ChatMsg {
   idx        Int       @id @default(autoincrement())
-  author     User      @relation("MsgAuthorUser", fields: [author_id], references: [user_id])
+  author     User      @relation("MsgAuthorUser", fields: [author_id], references: [user_id], onDelete: Cascade)
   author_id  String
   msg        String
   img        Int?
-  chatroom   ChatRoom  @relation("ChatRoom", fields: [chatroom_id], references: [idx])
+  chatroom   ChatRoom  @relation("ChatRoom", fields: [chatroom_id], references: [idx], onDelete: Cascade)
   chatroom_id Int
   isRead      String  
   created_at DateTime  @default(now())

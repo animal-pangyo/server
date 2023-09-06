@@ -16,6 +16,7 @@ export class ChatService {
   }
 
   async getChatRoomIdx(data: { target: string; userId: string }) {
+    console.log(data);
     const chatRoom = await this.prisma.chatRoom.findMany({
       where: {
         OR: [
@@ -167,31 +168,9 @@ export class ChatService {
   }
 
   async getChatMsg(request) {
-    let chatRoom = await this.prisma.chatRoom.findMany({
-      where: {
-        OR: [
-          {
-            user_id1: request.userid,
-            user_id2: request.target,
-          },
-          {
-            user_id1: request.target,
-            user_id2: request.userid,
-          },
-        ],
-      },
-    });
+    console.log(request);
 
-    if (chatRoom.length === 0) {
-      chatRoom = await this.prisma.chatRoom.create({
-        data: {
-          user_id1: request.userid,
-          user_id2: request.target,
-        },
-      });
-    }
-
-    const chatRoomIdx = chatRoom[0].idx;
+    const chatRoomIdx = this.getChatRoomIdx(request);
 
     const chatMsg = await this.prisma.chatMsg.findMany({
       where: {
