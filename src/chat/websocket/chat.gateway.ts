@@ -1,6 +1,4 @@
 import {
-  ConnectedSocket,
-  MessageBody,
   SubscribeMessage,
   WebSocketGateway,
   WebSocketServer,
@@ -8,11 +6,11 @@ import {
   OnGatewayConnection,
   OnGatewayDisconnect,
 } from '@nestjs/websockets';
-import { Server, Socket } from 'socket.io';
+import { Socket, Server } from 'socket.io';
 import { ChatService } from '../chat.service';
 import { createChatMsg } from '../dto/createChatMsg.dto';
 
-@WebSocketGateway(9002, { transports: ['websocket'], cors: { origin: '*' } })
+@WebSocketGateway(9002, { cors: { origin: '*' } })
 export class ChatGateway
   implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
 {
@@ -23,44 +21,67 @@ export class ChatGateway
 
   connectedClients: Map<string, Socket> = new Map();
 
-  @SubscribeMessage('test')
-  handleTest(@MessageBody() data: string) {
-    console.log('test', data);
+  handleConnection(client: Socket): void {
+    console.log('웹소켓 연결', client.id);
+    // console.log(client);
   }
 
-  @SubscribeMessage('/chat/sendMsg')
-  async handleSendMsg(
-    client: any,
-    createChatMsg: createChatMsg,
-  ): Promise<void> {
-    console.log('메세지 전송 : ', createChatMsg);
-    const savedMsg = await this.chatService.createChatMsg(createChatMsg);
+  // @SubscribeMessage('/chat/sendMsg')
+  // async handleSendMsg(
+  //   client: any,
+  //   createChatMsg: createChatMsg,
+  // ): Promise<void> {
+  //   const savedMsg = await this.chatService.createChatMsg(createChatMsg);
+  //   const targetSocket = this.connectedClients.get(createChatMsg.target);
 
-    // this.connectedClients[createChatMsg.id].to()
+  //   console.log(
+  //     '웹소켓 연결된 유저 아이디 리스트 : ',
+  //     this.connectedClients.keys(),
+  //   );
+  // }
 
-    this.server
-      .to(`chatroom-${createChatMsg.chatroom_id}`)
-      .emit('newMsg', savedMsg);
-  }
-
-  @SubscribeMessage('chatMessage')
-  handleChatMessage(
+  @SubscribeMessage('joinRoom')
+  async handleJoinRoom(
     client: Socket,
-    data: { message: string; room: string },
-  ): void {}
+    data: { target: string; userId: string },
+  ) {
+    console.log('joinRoom 접근');
+    const chatRoomIdx = await this.chatService.joinChatRoom(data, client);
+    client
+      .to(chatRoomIdx.idx)
+      .emit('joinedRoom', `Joined room: ${chatRoomIdx.idx}`);
+  }
+
+  @SubscribeMessage('sendMessage')
+  handleMessage(
+    client: Socket,
+    data: { id: string; target: string; text: string },
+  ) {
+    console.log('sendMessage 접근');
+    this.chatService.createChatMsg(data);
+
+    this.chatService.sendMessage(client, data);
+  }
+
+  @SubscribeMessage('/chat/open')
+  async receivedUserId(client: any, userId: string): Promise<void> {
+    console.log('오픈 시 저장되는 유저아이디 : ', userId);
+    if (!this.connectedClients.get(userId)) {
+      this.connectedClients.set(userId, client);
+    }
+  }
 
   afterInit(server: Socket): any {
-    console.log('웹소켓 시작');
-  }
-
-  handleConnection(client: Socket): void {
-    this.connectedClients[client.id] = client;
-    console.log('웹소켓 연결');
-    console.log(client);
+    console.log('웹소켓 시작', server.id);
   }
 
   handleDisconnect(client: Socket): void {
-    delete this.connectedClients[client.id];
-    console.log('웹소켓 연결 끊음');
+    for (const [userId, userSocket] of this.connectedClients) {
+      if (userSocket === client) {
+        this.connectedClients.delete(userId);
+        break;
+      }
+    }
+    console.log('웹소켓 연결 끊음', client.id);
   }
 }

@@ -9,7 +9,6 @@ import {
   Req,
 } from '@nestjs/common';
 import { ChatService } from './chat.service';
-import { createChatMsg } from './dto/createChatMsg.dto';
 
 @Controller()
 export class ChatController {
@@ -52,12 +51,12 @@ export class ChatController {
     return this.chatService.getChatMsg(request);
   }
 
-  // 메세지 저장
-  @Post('/chat/sendMsg')
-  async sendChatMsg(@Body() createChatMsg: createChatMsg) {
-    console.log(createChatMsg);
-    return this.chatService.createChatMsg(createChatMsg);
-  }
+  // // 메세지 저장
+  // @Post('/chat/sendMsg')
+  // async sendChatMsg(@Body() createChatMsg: createChatMsg) {
+  //   console.log(createChatMsg);
+  //   return this.chatService.createChatMsg(createChatMsg);
+  // }
 
   // 메세지 가져오기
   @Get('/chat/getMsgs/:chatroomId')

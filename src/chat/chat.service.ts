@@ -1,20 +1,68 @@
 // @ts-nocheck
-import * as jwt from 'jsonwebtoken';
-
-import {
-  HttpStatus,
-  Injectable,
-  NotFoundException,
-  HttpException,
-} from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
+import { Server, Socket } from 'socket.io';
+import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma.service';
 import { createChatMsg } from './dto/createChatMsg.dto';
 
 @Injectable() // 해당 클래스(ChatService)를 Nest.js 서비스로 지정
 export class ChatService {
+  private chatRooms: Map<string, Socket[]> = new Map<string, Socket[]>();
+
   constructor(private prisma: PrismaService) {}
-  // PrismaService와 HashService를 주입받기
-  // 의존성 주입을 사용하여 필요한 서비스를 클래스 내에서 사용함
+
+  createChatRoom(idx: string) {
+    this.chatRooms.set(idx, []);
+  }
+
+  async getChatRoomIdx(data: { target: string; userId: string }) {
+    const chatRoom = await this.prisma.chatRoom.findMany({
+      where: {
+        OR: [
+          {
+            user_id1: data.target,
+            user_id2: data.userId,
+          },
+          {
+            user_id1: data.userId,
+            user_id2: data.target,
+          },
+        ],
+      },
+    });
+
+    if (chatRoom.length === 0) {
+      const chatRoomId = await this.prisma.chatRoom.create({
+        data: {
+          user_id1: data.id,
+          user_id2: data.target,
+        },
+      });
+      chatRoom.push(chatRoomId);
+    }
+
+    return existChatRoom.at(0).idx;
+  }
+
+  async joinChatRoom(data: { target: string; userId: string }, socket: Socket) {
+    const chatRoomIdx = await this.getChatRoomIdx(data);
+    room.push(socket);
+    socket.join(chatRoomIdx);
+    return chatRoomIdx;
+  }
+
+  async sendMessage(
+    client: Socket,
+    data: { id: string; target: string; text: string },
+  ) {
+    const room = await this.getChatRoomIdx({
+      userId: data.id,
+      target: data.target,
+    });
+    if (room) {
+      socket.to(room.idx).emit('message', data.text);
+    }
+  }
 
   async deleteChatRoom(chatRoomIdx) {
     await this.prisma.chatRoom.delete({
@@ -40,6 +88,7 @@ export class ChatService {
 
     const formattedChatRoomList = rooms.map(async (room) => {
       let userId;
+
       if (room.user_id1 === user_id) {
         userId = room.user_id2;
         room.user_id = userId;
@@ -77,7 +126,7 @@ export class ChatService {
   async getUserBlockList(user_id) {
     const blockList = await this.prisma.block.findMany({
       where: {
-        user_id: user_id,
+        block_user: user_id,
       },
     });
     return { blockList: blockList };
@@ -86,7 +135,7 @@ export class ChatService {
   async blockUser(request) {
     const existBlock = await this.isBlock(request);
 
-    if (!existBlock) {
+    if (existBlock) {
       await this.prisma.block.create({
         data: {
           user_id: request.id,
@@ -106,19 +155,18 @@ export class ChatService {
   }
 
   async isBlock(request) {
-    const existBlock = await this.prisma.block.findFirst({
+    const existBlock = await this.prisma.block.findMany({
       where: {
         user_id: request.id,
         block_user: request.blockId,
       },
     });
 
+    console.log(existBlock !== null);
     return existBlock !== null;
   }
 
   async getChatMsg(request) {
-    console.log(request);
-
     let chatRoom = await this.prisma.chatRoom.findMany({
       where: {
         OR: [
@@ -175,70 +223,46 @@ export class ChatService {
     };
   }
 
-  async createChatMsg(createChatMsg: createChatMsg) {
-    const chatRoom = await this.prisma.chatRoom.findMany({
-      where: {
-        OR: [
-          {
-            user_id1: createChatMsg.id,
-            user_id2: createChatMsg.target,
-          },
-          {
-            user_id1: createChatMsg.target,
-            user_id2: createChatMsg.id,
-          },
-        ],
-      },
+  async createChatMsg(data: { id: string; target: string; text: string }) {
+    // async createChatMsg(createChatMsg: createChatMsg) {
+
+    const chatRoomIdx = this.getChatRoomIdx({
+      userId: data.id,
+      target: data.target,
     });
 
-    const existChatRoom = await this.prisma.chatRoom.findMany({
-      where: {
-        idx: createChatMsg.chatroom_id,
+    // const unReadMsgCount = await this.prisma.chatMsg.count({
+    //   where: {
+    //     isRead: 'N',
+    //     chatRoomId: chatRoomIdx,
+    //   },
+    // });
+
+    // if (createChatMsg.img) {
+    //   return this.prisma.chatMsg.create({
+    //     data: {
+    //       msg: createChatMsg.text,
+    //       img: createChatMsg.img,
+    //       isRead: 'N',
+    //       author_id: createChatMsg.id,
+    //       chatroom_id: chatRoomIdx,
+    //       // count: unReadMsgCount,
+    //     },
+    //   });
+    // } else {
+
+    console.log(chatRoomIdx);
+    return this.prisma.chatMsg.create({
+      data: {
+        msg: createChatMsg.text,
+        isRead: 'N',
+        img: null,
+        author_id: createChatMsg.id,
+        chatroom_id: chatRoomIdx,
+        // count: unReadMsgCount,
       },
     });
-
-    if (existChatRoom.length === 0) {
-      this.prisma.chatRoom.create({
-        data: {
-          user_id1: createChatMsg.id,
-          user_id2: createChatMsg.target,
-        },
-      });
-
-      const chatRoomId = await this.prisma.chatRoom.findFirst({
-        where: {
-          user_id1: createChatMsg.id,
-          user_id2: createChatMsg.target,
-        },
-      });
-
-      console.log(existChatRoom);
-      createChatMsg.chatroom_id = chatRoomId;
-      console.log(createChatMsg.chatroom_id);
-    }
-
-    const chatRoomIdx = existChatRoom.at(0).idx;
-    if (createChatMsg.img) {
-      return this.prisma.chatMsg.create({
-        data: {
-          msg: createChatMsg.text,
-          img: createChatMsg.img,
-          isRead: false,
-          author_id: createChatMsg.id,
-          chatroom_id: chatRoomIdx,
-        },
-      });
-    } else {
-      return this.prisma.chatMsg.create({
-        data: {
-          msg: createChatMsg.text,
-          isRead: 'Y',
-          img: null,
-          author_id: createChatMsg.id,
-          chatroom_id: chatRoomIdx,
-        },
-      });
-    }
+    // }
   }
 
   async getChatMsgs(chatroomId: number) {

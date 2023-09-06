@@ -2,7 +2,7 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { AppService } from './app.service';
 import { Logger } from '@nestjs/common';
-import { WsAdapter } from '@nestjs/platform-ws';
+import { IoAdapter } from '@nestjs/platform-socket.io';
 require('dotenv').config(); // dotenv 패키지를 사용하여 환경 변수를 로드
 
 declare const module: any;
@@ -12,7 +12,8 @@ async function bootstrap() {
   // bootstrap() : 애플리케이션을 시작하는 역할
   // async : 비동기함수로 정의
   const app = await NestFactory.create(AppModule, { cors: true });
-  app.useWebSocketAdapter(new WsAdapter(app));
+  app.useWebSocketAdapter(new IoAdapter(app));
+  app.enableCors();
   // NestFactory를 사용하여 AppModule을 기반으로 Nest.js 애플리케이션을 생성
   // {cors : true} : Cross-Origin Resource Sharing(CORS)을 활성화
   const appService = app.get(AppService);
