@@ -55,7 +55,7 @@ export class ChatService {
   }
 
   async sendMessage(
-    client: Socket,
+    client: Server,
     data: { id: string; target: string; text: string },
   ) {
     const room = await this.getChatRoomIdx({

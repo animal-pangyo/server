@@ -60,7 +60,7 @@ export class ChatGateway
     console.log('sendMessage 접근');
     console.log(client.rooms)
     await this.chatService.createChatMsg(data);
-    this.chatService.sendMessage(client, data);
+    this.chatService.sendMessage(this.server, data);
   }
 
   @SubscribeMessage('/chat/open')
