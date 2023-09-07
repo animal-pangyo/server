@@ -57,14 +57,16 @@ export class ChatService {
   async sendMessage(
     client: Server,
     data: { id: string; target: string; text: string },
+    targetSocket?: Socket
   ) {
     const room = await this.getChatRoomIdx({
       userId: data.id,
       target: data.target,
     });
+    console.log("메시지 받았으니까 룸 찾아서 상대방 소켓 해당 룸에 메시지 보내야지!")
 
     if (room) {
-      console.log(room, 'room', `room-${room}`);
+      console.log("----", `client room-${room}`, data, client.rooms, "ta roms", targetSocket.rooms);
       client.to(`room-${room}`).emit('message', {
         text: data.text,
         target: data.target
@@ -234,7 +236,7 @@ export class ChatService {
     //     },
     //   });
     // } else {
-
+    console.log("현재 내가 대화중인 채팅방 -- createChatMsg ", chatRoomIdx, data)
     return this.prisma.chatMsg.create({
       data: {
         msg: data.text,
