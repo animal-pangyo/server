@@ -12,9 +12,8 @@ import { createChatMsg } from '../dto/createChatMsg.dto';
 
 @WebSocketGateway(9002, { cors: { origin: '*' } })
 export class ChatGateway
-  implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
-{
-  constructor(private readonly chatService: ChatService) {}
+  implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
+  constructor(private readonly chatService: ChatService) { }
 
   @WebSocketServer()
   server: Server;
@@ -45,21 +44,22 @@ export class ChatGateway
     client: Socket,
     data: { target: string; userId: string },
   ) {
-    console.log('joinRoom 접근');
-    const chatRoomIdx = await this.chatService.joinChatRoom(data, client);
+    console.log('joinRoom 접근', data);
+    const targetSocket = this.connectedClients.get(data.target);
+    const chatRoomIdx = await this.chatService.joinChatRoom(data, client, targetSocket);
     client
-      .to(chatRoomIdx.idx)
-      .emit('joinedRoom', `Joined room: ${chatRoomIdx.idx}`);
+      .to(String(chatRoomIdx))
+      .emit('joinedRoom', `Joined room: ${chatRoomIdx}`);
   }
 
   @SubscribeMessage('sendMessage')
-  handleMessage(
+  async handleMessage(
     client: Socket,
     data: { id: string; target: string; text: string },
   ) {
     console.log('sendMessage 접근');
-    this.chatService.createChatMsg(data);
-
+    console.log(client.rooms)
+    await this.chatService.createChatMsg(data);
     this.chatService.sendMessage(client, data);
   }
 

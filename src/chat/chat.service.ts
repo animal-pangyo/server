@@ -3,20 +3,18 @@ import { Injectable } from '@nestjs/common';
 import { Server, Socket } from 'socket.io';
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma.service';
-import { createChatMsg } from './dto/createChatMsg.dto';
 
 @Injectable() // 해당 클래스(ChatService)를 Nest.js 서비스로 지정
 export class ChatService {
   private chatRooms: Map<string, Socket[]> = new Map<string, Socket[]>();
 
-  constructor(private prisma: PrismaService) {}
+  constructor(private prisma: PrismaService) { }
 
   createChatRoom(idx: string) {
     this.chatRooms.set(idx, []);
   }
 
   async getChatRoomIdx(data: { target: string; userId: string }) {
-    console.log(data);
     const chatRoom = await this.prisma.chatRoom.findMany({
       where: {
         OR: [
@@ -35,20 +33,24 @@ export class ChatService {
     if (chatRoom.length === 0) {
       const chatRoomId = await this.prisma.chatRoom.create({
         data: {
-          user_id1: data.id,
+          user_id1: data.userId,
           user_id2: data.target,
         },
       });
       chatRoom.push(chatRoomId);
     }
 
-    return existChatRoom.at(0).idx;
+    return chatRoom.at(0).idx;
   }
 
-  async joinChatRoom(data: { target: string; userId: string }, socket: Socket) {
+  async joinChatRoom(data: { target: string; userId: string }, socket: Socket, targetSocket?: Socket) {
     const chatRoomIdx = await this.getChatRoomIdx(data);
-    room.push(socket);
-    socket.join(chatRoomIdx);
+    socket.join(`room-${chatRoomIdx}`);
+
+    if (targetSocket) {
+      targetSocket.join(`room-${chatRoomIdx}`);
+    }
+
     return chatRoomIdx;
   }
 
@@ -60,8 +62,10 @@ export class ChatService {
       userId: data.id,
       target: data.target,
     });
+
     if (room) {
-      socket.to(room.idx).emit('message', data.text);
+      console.log(room, 'room', `room-${room}`);
+      client.to(`room-${room}`).emit('message', data.text);
     }
   }
 
@@ -168,8 +172,6 @@ export class ChatService {
   }
 
   async getChatMsg(request) {
-    console.log(request);
-
     const chatRoomIdx = this.getChatRoomIdx(request);
 
     const chatMsg = await this.prisma.chatMsg.findMany({
@@ -205,7 +207,7 @@ export class ChatService {
   async createChatMsg(data: { id: string; target: string; text: string }) {
     // async createChatMsg(createChatMsg: createChatMsg) {
 
-    const chatRoomIdx = this.getChatRoomIdx({
+    const chatRoomIdx = await this.getChatRoomIdx({
       userId: data.id,
       target: data.target,
     });
@@ -230,13 +232,12 @@ export class ChatService {
     //   });
     // } else {
 
-    console.log(chatRoomIdx);
     return this.prisma.chatMsg.create({
       data: {
-        msg: createChatMsg.text,
+        msg: data.text,
         isRead: 'N',
         img: null,
-        author_id: createChatMsg.id,
+        author_id: data.id,
         chatroom_id: chatRoomIdx,
         // count: unReadMsgCount,
       },
