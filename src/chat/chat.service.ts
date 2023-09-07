@@ -145,7 +145,7 @@ export class ChatService {
   async blockUser(request) {
     const existBlock = await this.isBlock(request);
 
-    if (existBlock) {
+    if (!existBlock) {
       await this.prisma.block.create({
         data: {
           user_id: request.id,
@@ -173,7 +173,7 @@ export class ChatService {
     });
 
     console.log(existBlock !== null);
-    return existBlock !== null;
+    return !!existBlock.length;
   }
 
   async getChatMsg(request) {
