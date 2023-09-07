@@ -65,7 +65,10 @@ export class ChatService {
 
     if (room) {
       console.log(room, 'room', `room-${room}`);
-      client.to(`room-${room}`).emit('message', data.text);
+      client.to(`room-${room}`).emit('message', {
+        text: data.text,
+        target: data.target
+      });
     }
   }
 
