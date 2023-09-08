@@ -125,6 +125,7 @@ export class ChatService {
         }),
         userId,
         content: content.msg,
+        content: content?.msg || '',
         chatId: idx,
       };
     });
