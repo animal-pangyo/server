@@ -45,6 +45,12 @@ export class ChatController {
     return this.chatService.isBlock(request);
   }
 
+  // 상대방 차단 조회 (상대방이 나를 차단했는지)
+  @Post('/user/target/block')
+  async isTargetBlock(@Body() request) {
+    return this.chatService.isTargetBlock(request);
+  }
+
   // 안 읽은 메세지 개수
   @Post('/chat/count')
   async getUnreadCount(@Body() request: { userId: string; target: string }) {
@@ -56,13 +62,6 @@ export class ChatController {
   async saveChatMsg(@Body() request) {
     return this.chatService.getChatMsg(request);
   }
-
-  // // 메세지 저장
-  // @Post('/chat/sendMsg')
-  // async sendChatMsg(@Body() createChatMsg: createChatMsg) {
-  //   console.log(createChatMsg);
-  //   return this.chatService.createChatMsg(createChatMsg);
-  // }
 
   // 메세지 가져오기
   @Get('/chat/getMsgs/:chatroomId')

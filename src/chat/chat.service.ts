@@ -80,16 +80,25 @@ export class ChatService {
         target: data.target,
       });
 
-      if (targetClient) {
-        const recentlyMsg = await this.getRecentlyMsg(data.target, data.id);
-        const unreadMessageCount = await this.getUnreadMessageCount(
-          data.target,
-          data.id,
-        );
-        server.to(targetClient.id).emit('alert', {
-          latestMsg: recentlyMsg,
-          msgCnt: unreadMessageCount,
+      if (room) {
+        const isBlocked = await this.isBlock({
+          id: data.id,
+          blockId: data.target,
         });
+        console.log(' 차단했는가~? isBlocked', isBlocked);
+        if (!isBlocked) {
+        }
+        if (targetClient) {
+          const recentlyMsg = await this.getRecentlyMsg(data.target, data.id);
+          const unreadMessageCount = await this.getUnreadMessageCount(
+            data.target,
+            data.id,
+          );
+          server.to(targetClient.id).emit('alert', {
+            latestMsg: recentlyMsg,
+            msgCnt: unreadMessageCount,
+          });
+        }
       }
     }
   }
@@ -195,7 +204,6 @@ export class ChatService {
       },
     });
 
-    console.log(existBlock !== null);
     return !!existBlock.length;
   }
 
@@ -331,17 +339,30 @@ export class ChatService {
   }
 
   async getUnreadCount(request) {
-    const chatRoomIdx = await this.getChatRoomIdx({ target, userId });
+    console.log(request);
+    const chatRoomIdx = await this.getChatRoomIdx(request);
+
     const unreadMessageCount = await this.prisma.chatMsg.count({
       where: {
         chatroom_id: chatRoomIdx,
         isRead: 'N',
         NOT: {
-          author_id: userId,
+          author_id: request.userId,
         },
       },
     });
 
     return unreadMessageCount;
+  }
+
+  async isTargetBlock(request) {
+    const existBlock = await this.prisma.block.findMany({
+      where: {
+        user_id: request.target,
+        block_user: request.userId,
+      },
+    });
+
+    return !!existBlock.length;
   }
 }

@@ -12,8 +12,9 @@ import { createChatMsg } from '../dto/createChatMsg.dto';
 
 @WebSocketGateway(9002, { cors: { origin: '*' } })
 export class ChatGateway
-  implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
-  constructor(private readonly chatService: ChatService) { }
+  implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
+{
+  constructor(private readonly chatService: ChatService) {}
 
   @WebSocketServer()
   server: Server;
@@ -46,7 +47,11 @@ export class ChatGateway
   ) {
     console.log('joinRoom 접근', data);
     const targetSocket = this.connectedClients.get(data.target);
-    const chatRoomIdx = await this.chatService.joinChatRoom(data, client, targetSocket);
+    const chatRoomIdx = await this.chatService.joinChatRoom(
+      data,
+      client,
+      targetSocket,
+    );
     client
       .to(String(chatRoomIdx))
       .emit('joinedRoom', `Joined room: ${chatRoomIdx}`);
@@ -59,7 +64,11 @@ export class ChatGateway
   ) {
     const targetSocket = this.connectedClients.get(data.target);
 
-    await this.chatService.joinChatRoom({ userId: data.id, target: data.target }, client, targetSocket);
+    await this.chatService.joinChatRoom(
+      { userId: data.id, target: data.target },
+      client,
+      targetSocket,
+    );
     await this.chatService.createChatMsg(data);
     this.chatService.sendMessage(this.server, data, targetSocket);
   }
