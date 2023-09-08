@@ -43,7 +43,6 @@ import { ChatGateway } from './chat/websocket/chat.gateway';
     HashService,
     PrismaService,
     ChatService,
-    ChatGateway,
   ], // 해당 모듈에서 사용될 프로바이더들을 지정
   // 프로바이더 : 의존성 주입을 통해서 다른 클래스나 값들을 제공
 })

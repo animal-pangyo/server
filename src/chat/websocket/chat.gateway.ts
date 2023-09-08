@@ -47,7 +47,6 @@ export class ChatGateway
     console.log('joinRoom 접근', data);
     const targetSocket = this.connectedClients.get(data.target);
     const chatRoomIdx = await this.chatService.joinChatRoom(data, client, targetSocket);
-    targetSocket.join(`room-${chatRoomIdx}`)
     client
       .to(String(chatRoomIdx))
       .emit('joinedRoom', `Joined room: ${chatRoomIdx}`);
@@ -60,13 +59,9 @@ export class ChatGateway
   ) {
     const targetSocket = this.connectedClients.get(data.target);
 
-    const chatRoomIdx = await this.chatService.joinChatRoom({userId: data.id, target: data.target}, client, targetSocket);
-
-    targetSocket.join(`room-${chatRoomIdx}`)
-    console.log('sendMessage 접근 타겟은', targetSocket.rooms);
-    console.log("내소켓 방", client.rooms, "senmess sub romms", )
+    await this.chatService.joinChatRoom({ userId: data.id, target: data.target }, client, targetSocket);
     await this.chatService.createChatMsg(data);
-    this.chatService.sendMessage(this.server, data, targetSocket);
+    this.chatService.sendMessage(this.server, data);
   }
 
   @SubscribeMessage('/chat/open')

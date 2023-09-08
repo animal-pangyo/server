@@ -45,9 +45,12 @@ export class ChatService {
 
   async joinChatRoom(data: { target: string; userId: string }, socket: Socket, targetSocket?: Socket) {
     const chatRoomIdx = await this.getChatRoomIdx(data);
-    socket.join(`room-${chatRoomIdx}`);
 
-    if (targetSocket) {
+    if (!socket.rooms.has(`room-${chatRoomIdx}`)) {
+      socket.join(`room-${chatRoomIdx}`);
+    }
+
+    if (targetSocket && !targetSocket.rooms.has(`room-${chatRoomIdx}`)) {
       targetSocket.join(`room-${chatRoomIdx}`);
     }
 
@@ -57,7 +60,6 @@ export class ChatService {
   async sendMessage(
     client: Server,
     data: { id: string; target: string; text: string },
-    targetSocket?: Socket
   ) {
     const room = await this.getChatRoomIdx({
       userId: data.id,
@@ -66,7 +68,6 @@ export class ChatService {
     console.log("메시지 받았으니까 룸 찾아서 상대방 소켓 해당 룸에 메시지 보내야지!")
 
     if (room) {
-      console.log("----", `client room-${room}`, data, client.rooms, "ta roms", targetSocket.rooms);
       client.to(`room-${room}`).emit('message', {
         text: data.text,
         target: data.target
