@@ -61,7 +61,7 @@ export class ChatGateway
 
     await this.chatService.joinChatRoom({ userId: data.id, target: data.target }, client, targetSocket);
     await this.chatService.createChatMsg(data);
-    this.chatService.sendMessage(this.server, data);
+    this.chatService.sendMessage(this.server, data, targetSocket);
   }
 
   @SubscribeMessage('/chat/open')

@@ -58,8 +58,9 @@ export class ChatService {
   }
 
   async sendMessage(
-    client: Server,
+    server: Server,
     data: { id: string; target: string; text: string },
+    targetClient?: Socket
   ) {
     const room = await this.getChatRoomIdx({
       userId: data.id,
@@ -68,10 +69,19 @@ export class ChatService {
     console.log("메시지 받았으니까 룸 찾아서 상대방 소켓 해당 룸에 메시지 보내야지!")
 
     if (room) {
-      client.to(`room-${room}`).emit('message', {
+      server.to(`room-${room}`).emit('message', {
         text: data.text,
         target: data.target
       });
+
+      if (targetClient) {
+        const recentlyMsg = await this.getRecentlyMsg(data.target, data.id);
+        const unreadMessageCount = await this.getUnreadMessageCount(data.target, data.id);
+        server.to(targetClient.id).emit('alert', {
+          msgCnt: recentlyMsg,
+          latestMsg: unreadMessageCount
+        });
+      }
     }
   }
 
@@ -124,7 +134,6 @@ export class ChatService {
           minute: '2-digit',
         }),
         userId,
-        content: content.msg,
         content: content?.msg || '',
         chatId: idx,
       };
@@ -179,13 +188,23 @@ export class ChatService {
   }
 
   async getChatMsg(request) {
-    const chatRoomIdx = this.getChatRoomIdx(request);
+    const chatRoomIdx = await this.getChatRoomIdx(request);
 
     const chatMsg = await this.prisma.chatMsg.findMany({
       where: {
         chatroom_id: chatRoomIdx,
       },
     });
+
+    await this.prisma.chatMsg.updateMany({
+      where: {
+        chatroom_id: chatRoomIdx,
+        isRead: 'N'
+      },
+      data: {
+        isRead: 'Y'
+      }
+    })
 
     const formattedChatMsg = chatMsg.map((message) => {
       const { created_at, ...rest } = message;
@@ -263,18 +282,37 @@ export class ChatService {
     });
   }
 
-  async getUnreadMessageCount(userId: string): Promise<number> {
+  async getUnreadMessageCount(userId: string, target: string): Promise<number> {
+    const chatRoomIdx = await this.getChatRoomIdx({ target, userId });
     const unreadMessageCount = await this.prisma.chatMsg.count({
       where: {
-        receiverId: userId,
-        isRead: false,
+        chatroom_id: chatRoomIdx,
+        isRead: 'N',
+        NOT: {
+          author_id: userId
+        }
       },
     });
 
     return unreadMessageCount;
   }
 
-  async getRecentlyMsg(userId: string) {
-    const recentMessages = await this.prisma.chatMsg.findFirst({});
+  async getRecentlyMsg(userId: string, target: string) {
+    const chatRoomIdx = await this.getChatRoomIdx({ target, userId });
+    const recentMessages = await this.prisma.chatMsg.findFirst({
+      where: {
+        chatroom_id: chatRoomIdx,
+        isRead: 'N',
+        NOT: {
+          author_id: userId
+        }
+      },
+    });
+
+    return !recentMessages || {
+      id: recentMessages.author_id,
+      text: recentMessages.msg,
+      img: recentMessages.img,
+    };
   }
 }
