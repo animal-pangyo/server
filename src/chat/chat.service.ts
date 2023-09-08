@@ -8,7 +8,7 @@ import { PrismaService } from 'src/prisma.service';
 export class ChatService {
   private chatRooms: Map<string, Socket[]> = new Map<string, Socket[]>();
 
-  constructor(private prisma: PrismaService) { }
+  constructor(private prisma: PrismaService) {}
 
   createChatRoom(idx: string) {
     this.chatRooms.set(idx, []);
@@ -43,7 +43,11 @@ export class ChatService {
     return chatRoom.at(0).idx;
   }
 
-  async joinChatRoom(data: { target: string; userId: string }, socket: Socket, targetSocket?: Socket) {
+  async joinChatRoom(
+    data: { target: string; userId: string },
+    socket: Socket,
+    targetSocket?: Socket,
+  ) {
     const chatRoomIdx = await this.getChatRoomIdx(data);
 
     if (!socket.rooms.has(`room-${chatRoomIdx}`)) {
@@ -60,26 +64,31 @@ export class ChatService {
   async sendMessage(
     server: Server,
     data: { id: string; target: string; text: string },
-    targetClient?: Socket
+    targetClient?: Socket,
   ) {
     const room = await this.getChatRoomIdx({
       userId: data.id,
       target: data.target,
     });
-    console.log("메시지 받았으니까 룸 찾아서 상대방 소켓 해당 룸에 메시지 보내야지!")
+    console.log(
+      '메시지 받았으니까 룸 찾아서 상대방 소켓 해당 룸에 메시지 보내야지!',
+    );
 
     if (room) {
       server.to(`room-${room}`).emit('message', {
         text: data.text,
-        target: data.target
+        target: data.target,
       });
 
       if (targetClient) {
         const recentlyMsg = await this.getRecentlyMsg(data.target, data.id);
-        const unreadMessageCount = await this.getUnreadMessageCount(data.target, data.id);
+        const unreadMessageCount = await this.getUnreadMessageCount(
+          data.target,
+          data.id,
+        );
         server.to(targetClient.id).emit('alert', {
           latestMsg: recentlyMsg,
-          msgCnt: unreadMessageCount
+          msgCnt: unreadMessageCount,
         });
       }
     }
@@ -121,6 +130,9 @@ export class ChatService {
       const content = await this.prisma.chatMsg.findFirst({
         where: {
           chatroom_id: room.idx,
+        },
+        orderBy: {
+          created_at: 'desc',
         },
       });
 
@@ -199,26 +211,41 @@ export class ChatService {
     await this.prisma.chatMsg.updateMany({
       where: {
         chatroom_id: chatRoomIdx,
-        isRead: 'N'
+        isRead: 'N',
+        NOT: {
+          author_id: request.userId,
+        },
       },
       data: {
-        isRead: 'Y'
-      }
-    })
-
-    const formattedChatMsg = chatMsg.map((message) => {
-      const { created_at, ...rest } = message;
-      return {
-        ...rest,
-        createdAt: created_at.toLocaleString('en-US', {
-          year: 'numeric',
-          month: '2-digit',
-          day: '2-digit',
-          hour: '2-digit',
-          minute: '2-digit',
-        }),
-      };
+        isRead: 'Y',
+      },
     });
+
+    const formattedChatMsg = await Promise.all(
+      chatMsg.map(async (message) => {
+        let imgPath = null;
+        if (message.img) {
+          imgPath = await this.prisma.resource.findFirst({
+            where: {
+              idx: message.img,
+            },
+          });
+        }
+
+        const { created_at, img, ...rest } = message;
+        return {
+          ...rest,
+          img: imgPath ? imgPath.img : null,
+          createdAt: created_at.toLocaleString('en-US', {
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+            hour: '2-digit',
+            minute: '2-digit',
+          }),
+        };
+      }),
+    );
 
     return {
       list: formattedChatMsg,
@@ -238,26 +265,11 @@ export class ChatService {
       target: data.target,
     });
 
-    // const unReadMsgCount = await this.prisma.chatMsg.count({
-    //   where: {
-    //     isRead: 'N',
-    //     chatRoomId: chatRoomIdx,
-    //   },
-    // });
-
-    // if (createChatMsg.img) {
-    //   return this.prisma.chatMsg.create({
-    //     data: {
-    //       msg: createChatMsg.text,
-    //       img: createChatMsg.img,
-    //       isRead: 'N',
-    //       author_id: createChatMsg.id,
-    //       chatroom_id: chatRoomIdx,
-    //       // count: unReadMsgCount,
-    //     },
-    //   });
-    // } else {
-    console.log("현재 내가 대화중인 채팅방 -- createChatMsg ", chatRoomIdx, data)
+    console.log(
+      '현재 내가 대화중인 채팅방 -- createChatMsg ',
+      chatRoomIdx,
+      data,
+    );
     return this.prisma.chatMsg.create({
       data: {
         msg: data.text,
@@ -289,8 +301,8 @@ export class ChatService {
         chatroom_id: chatRoomIdx,
         isRead: 'N',
         NOT: {
-          author_id: userId
-        }
+          author_id: userId,
+        },
       },
     });
 
@@ -304,15 +316,32 @@ export class ChatService {
         chatroom_id: chatRoomIdx,
         isRead: 'N',
         NOT: {
-          author_id: userId
-        }
+          author_id: userId,
+        },
       },
     });
 
-    return !recentMessages || {
-      id: recentMessages.author_id,
-      text: recentMessages.msg,
-      img: recentMessages.img,
-    };
+    return (
+      !recentMessages || {
+        id: recentMessages.author_id,
+        text: recentMessages.msg,
+        img: recentMessages.img,
+      }
+    );
+  }
+
+  async getUnreadCount(request) {
+    const chatRoomIdx = await this.getChatRoomIdx({ target, userId });
+    const unreadMessageCount = await this.prisma.chatMsg.count({
+      where: {
+        chatroom_id: chatRoomIdx,
+        isRead: 'N',
+        NOT: {
+          author_id: userId,
+        },
+      },
+    });
+
+    return unreadMessageCount;
   }
 }

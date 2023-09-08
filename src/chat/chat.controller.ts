@@ -45,6 +45,12 @@ export class ChatController {
     return this.chatService.isBlock(request);
   }
 
+  // 안 읽은 메세지 개수
+  @Post('/chat/count')
+  async getUnreadCount(@Body() request: { userId: string; target: string }) {
+    return this.chatService.getUnreadCount(request);
+  }
+
   // 대화 내용 가져오기
   @Post('/chat')
   async saveChatMsg(@Body() request) {
