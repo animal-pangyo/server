@@ -78,8 +78,8 @@ export class ChatService {
         const recentlyMsg = await this.getRecentlyMsg(data.target, data.id);
         const unreadMessageCount = await this.getUnreadMessageCount(data.target, data.id);
         server.to(targetClient.id).emit('alert', {
-          msgCnt: recentlyMsg,
-          latestMsg: unreadMessageCount
+          latestMsg: recentlyMsg,
+          msgCnt: unreadMessageCount
         });
       }
     }
