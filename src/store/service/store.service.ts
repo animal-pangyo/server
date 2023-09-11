@@ -172,7 +172,7 @@ export class StoreService {
     storeId: number,
     createReviewDto: CreateReviewDto, // 생성할 리뷰 데이터
   ): Promise<any> {
-    console.log(createReviewDto);
+
     const { title, content, user_id } = createReviewDto;
     // 리뷰를 생성하고, PrismaService를 사용하여 데이터베이스에 저장합니다.
     return this.prismaService.review.create({
@@ -267,7 +267,7 @@ export class StoreService {
 
     const { userId, storeId, isLike } = createLikeDto;
     // createLikeDto에서 userId, storeId, isLike를 추출하여 변수로 할당
-    console.log(userId);
+
     const userKey = await this.prismaService.user.findFirst({
       where: {
         user_id: userId,
@@ -279,7 +279,6 @@ export class StoreService {
     // prismaService.user.findFirst를 사용
     // 주어진 userId에 해당하는 사용자의 idx를 검색
 
-    console.log(userKey.idx);
     const existingLike = await this.prismaService.like.findFirst({
       where: {
         user_id: userKey.idx,

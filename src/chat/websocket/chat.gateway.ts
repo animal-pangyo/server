@@ -23,22 +23,7 @@ export class ChatGateway
 
   handleConnection(client: Socket): void {
     console.log('웹소켓 연결', client.id);
-    // console.log(client);
   }
-
-  // @SubscribeMessage('/chat/sendMsg')
-  // async handleSendMsg(
-  //   client: any,
-  //   createChatMsg: createChatMsg,
-  // ): Promise<void> {
-  //   const savedMsg = await this.chatService.createChatMsg(createChatMsg);
-  //   const targetSocket = this.connectedClients.get(createChatMsg.target);
-
-  //   console.log(
-  //     '웹소켓 연결된 유저 아이디 리스트 : ',
-  //     this.connectedClients.keys(),
-  //   );
-  // }
 
   @SubscribeMessage('joinRoom')
   async handleJoinRoom(

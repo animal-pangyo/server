@@ -70,9 +70,6 @@ export class ChatService {
       userId: data.id,
       target: data.target,
     });
-    console.log(
-      '메시지 받았으니까 룸 찾아서 상대방 소켓 해당 룸에 메시지 보내야지!',
-    );
 
     if (room) {
       server.to(`room-${room}`).emit('message', {
@@ -85,11 +82,9 @@ export class ChatService {
           id: data.id,
           blockId: data.target,
         });
-        console.log(' 차단했는가~? isBlocked', isBlocked);
-        if (!isBlocked) {
-        }
+
         if (targetClient) {
-          const recentlyMsg = data.text;//await this.getRecentlyMsg(data.target, data.id);
+          const recentlyMsg = data.text;
           const unreadMessageCount = await this.getUnreadCountAll(data.target);
           server.to(targetClient.id).emit('alert', {
             latestMsg: recentlyMsg,
@@ -217,8 +212,6 @@ export class ChatService {
       },
     });
 
-    console.log(chatRoomIdx, 'chatRoomIdx', request);
-
     await this.prisma.chatMsg.updateMany({
       where: {
         chatroom_id: chatRoomIdx,
@@ -276,11 +269,6 @@ export class ChatService {
       target: data.target,
     });
 
-    console.log(
-      '현재 내가 대화중인 채팅방 -- createChatMsg ',
-      chatRoomIdx,
-      data,
-    );
     return this.prisma.chatMsg.create({
       data: {
         msg: data.text,
@@ -342,7 +330,7 @@ export class ChatService {
   }
 
   async getUnreadCount(request) {
-    console.log(request);
+
     const chatRoomIdx = await this.getChatRoomIdx(request);
 
     const unreadMessageCount = await this.prisma.chatMsg.count({
@@ -387,29 +375,6 @@ export class ChatService {
     });
     
     return unreadMessageCount;
-      // 각 채팅방에서 유저가 안 읽은 메시지를 가져옵니다.
-      // const unreadMessages = await Promise.all(
-      //   chatRoomList.map(async (chatRoom) => {
-      //     const unreadMsgCount = await  this.prisma.chatMsg.count({
-      //       where: {
-      //         chatroom_id: chatRoom.idx,
-      //         author_id: {
-      //           not: userId, // 유저가 작성한 메시지가 아닌 것 중에서
-      //         },
-      //         isRead: "N", // 안 읽은 메시지만
-      //       },
-      //     });
-      //     return unreadMsgCount;
-      //   })
-      // );
-      //   console.log("unreadMessages", unreadMessages)
-      // // 총 안 읽은 메시지 수를 계산합니다.
-      // const totalUnreadMessages = unreadMessages.reduce(
-      //   (accumulator, currentValue) => accumulator + currentValue,
-      //   0
-      // );
-  
-      // return totalUnreadMessages;
   }
 
   async isTargetBlock(request) {
