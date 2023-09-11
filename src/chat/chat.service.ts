@@ -89,7 +89,7 @@ export class ChatService {
         if (!isBlocked) {
         }
         if (targetClient) {
-          const recentlyMsg = await this.getRecentlyMsg(data.target, data.id);
+          const recentlyMsg = data.text;//await this.getRecentlyMsg(data.target, data.id);
           const unreadMessageCount = await this.getUnreadMessageCount(
             data.target,
             data.id,
