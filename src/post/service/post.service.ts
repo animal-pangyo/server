@@ -252,7 +252,7 @@ export class PostService {
 
   async addPost(createPostDto: CreatePostDto): Promise<Post> {
     const { user_id, board_type, post_pw } = createPostDto;
-    console.log(post_pw, createPostDto);
+
     if (board_type === 'inquiries' && !post_pw) {
       throw new NotFoundException('문의 게시글 비밀번호 확인 요망');
     }
