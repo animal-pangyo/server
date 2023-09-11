@@ -90,10 +90,7 @@ export class ChatService {
         }
         if (targetClient) {
           const recentlyMsg = data.text;//await this.getRecentlyMsg(data.target, data.id);
-          const unreadMessageCount = await this.getUnreadMessageCount(
-            data.target,
-            data.id,
-          );
+          const unreadMessageCount = await this.getUnreadCountAll(data.target);
           server.to(targetClient.id).emit('alert', {
             latestMsg: recentlyMsg,
             msgCnt: unreadMessageCount,
@@ -168,10 +165,14 @@ export class ChatService {
   async getUserBlockList(user_id) {
     const blockList = await this.prisma.block.findMany({
       where: {
-        block_user: user_id,
+        user_id: user_id,
+      },
+      include: {
+        blocked: true, // 차단된 사용자 정보를 가져옵니다.
       },
     });
-    return { blockList: blockList };
+
+    return {blockList} ;
   }
 
   async blockUser(request) {
@@ -215,6 +216,8 @@ export class ChatService {
         chatroom_id: chatRoomIdx,
       },
     });
+
+    console.log(chatRoomIdx, 'chatRoomIdx', request);
 
     await this.prisma.chatMsg.updateMany({
       where: {
@@ -353,6 +356,60 @@ export class ChatService {
     });
 
     return unreadMessageCount;
+  }
+  
+  async getUnreadCountAll(userId) {
+    const chatRoomList = await this.prisma.chatRoom.findMany({
+      where: {
+        OR: [
+          {
+            user_id1: userId
+          },
+          {
+            user_id2: userId
+          }
+        ]
+      }
+    });
+
+    if (!chatRoomList.length) return 0;
+
+    const unreadMessageCount = await this.prisma.chatMsg.count({
+      where: {
+        OR: chatRoomList.map(({ idx: chatroom_id }) => ({
+          chatroom_id
+        })),
+        isRead: 'N',
+        NOT: {
+          author_id: userId,
+        },
+      },
+    });
+    
+    return unreadMessageCount;
+      // 각 채팅방에서 유저가 안 읽은 메시지를 가져옵니다.
+      // const unreadMessages = await Promise.all(
+      //   chatRoomList.map(async (chatRoom) => {
+      //     const unreadMsgCount = await  this.prisma.chatMsg.count({
+      //       where: {
+      //         chatroom_id: chatRoom.idx,
+      //         author_id: {
+      //           not: userId, // 유저가 작성한 메시지가 아닌 것 중에서
+      //         },
+      //         isRead: "N", // 안 읽은 메시지만
+      //       },
+      //     });
+      //     return unreadMsgCount;
+      //   })
+      // );
+      //   console.log("unreadMessages", unreadMessages)
+      // // 총 안 읽은 메시지 수를 계산합니다.
+      // const totalUnreadMessages = unreadMessages.reduce(
+      //   (accumulator, currentValue) => accumulator + currentValue,
+      //   0
+      // );
+  
+      // return totalUnreadMessages;
   }
 
   async isTargetBlock(request) {
